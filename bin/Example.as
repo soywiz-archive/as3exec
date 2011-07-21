@@ -20,11 +20,11 @@ package {
 			graphics.drawRect(0, 0, 100, 100);
 			graphics.endFill();
 
-			Stdio.init(stage);
+			Stdio.init(stage, loaderInfo);
 			{
 				Stdio.writefln("Hello World!");
 				
-				//throw(new Error("Error!"));
+				throw(new Error("Error!"));
 			}
 			Stdio.exit(0);
 		}
