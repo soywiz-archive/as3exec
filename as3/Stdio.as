@@ -11,6 +11,11 @@ package {
 			
 			Stdio.writefln("Version: " + Capabilities.version + " :: " + (Capabilities.isDebugger ? "Debugger" : "Retail"));
 		}
+		
+		static public function format(format:String, ...rest):String {
+			throw(new Error("TODO"));
+			return "";
+		}
 
 		static public function writef(str:*):void {
 			if (ExternalInterface.available) {
