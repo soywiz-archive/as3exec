@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using ExControls;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace as3exec
 {
@@ -25,7 +26,7 @@ namespace as3exec
 			ThisForm = this;
 			this.args = args;
 			this.StartPosition = FormStartPosition.Manual;
-			this.SetDesktopBounds(0, 0, 2, 2);
+			this.SetDesktopBounds(0, 0, 1, 1);
 
 			InitializeComponent();
 
@@ -42,6 +43,37 @@ namespace as3exec
 			Timer1.Tick += new EventHandler(Timer1_Tick);
 			Timer1.Start();
 			//Timer1.Container = this;
+		}
+
+		private const int SW_SHOWNOACTIVATE = 4;
+		private const int HWND_TOPMOST = -1;
+		private const uint SWP_NOACTIVATE = 0x0010;
+
+		[DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+		static extern bool SetWindowPos(
+			 int hWnd,           // window handle
+			 int hWndInsertAfter,    // placement-order handle
+			 int X,          // horizontal position
+			 int Y,          // vertical position
+			 int cx,         // width
+			 int cy,         // height
+			 uint uFlags);       // window positioning flags
+
+		[DllImport("user32.dll")]
+		static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+		// http://stackoverflow.com/questions/156046/show-a-form-without-stealing-focus-in-c
+		public void ShowInactiveTopmost()
+		{
+			StaticShowInactiveTopmost(this);
+		}
+
+		static void StaticShowInactiveTopmost(Form frm)
+		{
+			ShowWindow(frm.Handle, SW_SHOWNOACTIVATE);
+			SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST,
+			frm.Left, frm.Top, frm.Width, frm.Height,
+			SWP_NOACTIVATE);
 		}
 
 		void Timer1_Tick(object sender, EventArgs e)
@@ -102,7 +134,8 @@ namespace as3exec
 			flash.LoadMovie(0, MoviePath);
 			try
 			{
-				flash.Size = Size;
+				//flash.Size = Size;
+				flash.Size = new Size(1, 1);
 				flash.Quality = 1;
 				flash.GotoFrame(0);
 				flash.Play();
