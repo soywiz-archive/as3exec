@@ -114,6 +114,8 @@ namespace ExControls
 			//Console.WriteLine(sender);
 			//Console.WriteLine(e.request);
 
+			//Console.WriteLine("**********************");
+
 			InvokeInfo InvokeInfo;
 			try
 			{

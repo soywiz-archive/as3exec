@@ -76,6 +76,7 @@ namespace as3exec
 			//flash.SetVariable("Arguments", flash.SerializeObject(args));
 
 			flash.RegisterCallback("getargs", as3_getargs);
+			flash.RegisterCallback("writef", as3_writef);
 			flash.RegisterCallback("writefln", as3_writefln);
 			flash.RegisterCallback("exit", as3_exit);
 
@@ -133,7 +134,14 @@ namespace as3exec
 		dynamic as3_writefln(dynamic Params)
 		{
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(Params));
-			Console.WriteLine(ExAxShockwaveFlash.ToOutputString(Params));
+			Console.WriteLine("{0}", ExAxShockwaveFlash.ToOutputString(Params));
+			return "";
+		}
+
+		dynamic as3_writef(dynamic Params)
+		{
+			//Console.WriteLine(ExAxShockwaveFlash.ToJson(Params));
+			Console.Write("{0}", ExAxShockwaveFlash.ToOutputString(Params));
 			return "";
 		}
 

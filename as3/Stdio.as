@@ -2,16 +2,27 @@ package {
 	import flash.external.ExternalInterface;
 	import flash.events.UncaughtErrorEvent;
 	import flash.display.Stage;
+	import flash.system.Capabilities;
 
 	public class Stdio {
 		static public function init(stage:Stage, loaderInfo:*):void {
 			stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+			
+			Stdio.writefln("Version: " + Capabilities.version + " :: " + (Capabilities.isDebugger ? "Debugger" : "Retail"));
 		}
-	
+
+		static public function writef(str:*):void {
+			if (ExternalInterface.available) {
+				ExternalInterface.call("writef", '' + str);
+			} else {
+				trace(str);
+			}
+		}
+		
 		static public function writefln(str:*):void {
 			if (ExternalInterface.available) {
-				ExternalInterface.call("writefln", str);
+				ExternalInterface.call("writefln", '' + str);
 			} else {
 				trace(str);
 			}
