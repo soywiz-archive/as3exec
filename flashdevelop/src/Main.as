@@ -18,7 +18,6 @@ package  {
 			Stdio.init(stage, loaderInfo);
 			var testRunner:TestRunner = new TestRunner();
 			testRunner.addTestCase(new HelloTestCase());
-			throw(new Error("asasa"));
 			testRunner.run();
 		}
 	}
