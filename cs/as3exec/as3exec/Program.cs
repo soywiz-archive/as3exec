@@ -19,8 +19,8 @@ namespace as3exec
 				Application.SetCompatibleTextRenderingDefault(false);
 				Form1 form = new Form1(args);
 
-				//Application.Run(form);
-				Application.Run();
+				Application.Run(form);
+				//Application.Run();
 			}
 			catch (Exception e)
 			{

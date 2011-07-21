@@ -8,7 +8,7 @@ package asunit {
 			queue = [];
 		}
 		
-		public function addTest(testCase:TestCase):void {
+		public function addTestCase(testCase:TestCase):void {
 			var xml:XML = describeType(testCase);
 			for each (var method:* in xml.method) {
 				queue.push([testCase, method]);
@@ -22,13 +22,26 @@ package asunit {
 				var testCase:TestCase = row[0];
 				var method:* = row[1];
 				var methodPath:String = method.@declaredBy + "." + method.@name;
-				Stdio.writef(methodPath + "...");
-				{
-					testCase[method.@name]();
+				if (/^test/.test(method.@name)) {
+					var completedCallback:Function = function():void {
+						Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
+						executeTestMethod();
+					};
+					
+					Stdio.writef(methodPath + "...");
+					{
+						
+						testCase.__init(completedCallback);
+						testCase[method.@name]();
+					}
+					
+					//trace(method);
+					if (testCase.waitAsyncCount <= 0) {
+						setTimeout(completedCallback, 0);
+					}
+				} else {
+					setTimeout(executeTestMethod, 0)
 				}
-				Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
-				//trace(method);
-				setTimeout(executeTestMethod, 0);
 			} else {
 				Stdio.exit();
 			}

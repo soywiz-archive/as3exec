@@ -24,6 +24,8 @@ namespace as3exec
 		{
 			ThisForm = this;
 			this.args = args;
+			this.StartPosition = FormStartPosition.Manual;
+			this.SetDesktopBounds(0, 0, 2, 2);
 
 			InitializeComponent();
 
@@ -113,6 +115,9 @@ namespace as3exec
 			{
 				throw (new Exception(String.Format("Can't load movie '{0}'", MoviePath), Exception));
 			}
+
+			Controls.Add(flash);
+
 			//Console.WriteLine(flash.Playing);
 
 
@@ -135,6 +140,7 @@ namespace as3exec
 		{
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(Params));
 			Console.WriteLine("{0}", ExAxShockwaveFlash.ToOutputString(Params));
+			Console.Out.Flush();
 			return "";
 		}
 
@@ -142,6 +148,7 @@ namespace as3exec
 		{
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(Params));
 			Console.Write("{0}", ExAxShockwaveFlash.ToOutputString(Params));
+			Console.Out.Flush();
 			return "";
 		}
 

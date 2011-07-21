@@ -16,7 +16,7 @@ package  {
 		protected function main():void {
 			Stdio.init(stage, loaderInfo);
 			var testRunner:TestRunner = new TestRunner();
-			testRunner.addTest(new HelloTestCase());
+			testRunner.addTestCase(new HelloTestCase());
 			testRunner.run();
 		}
 	}
