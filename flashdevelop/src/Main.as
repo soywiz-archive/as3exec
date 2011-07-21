@@ -2,6 +2,7 @@ package  {
 	import asunit.TestRunner;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.utils.setTimeout;
 	
 	public class Main extends Sprite {
 		public function Main():void {
@@ -10,13 +11,14 @@ package  {
 		
 		private function init(e:Event = null):void {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
-			main();
+			setTimeout(main, 0);
 		}
 		
 		protected function main():void {
 			Stdio.init(stage, loaderInfo);
 			var testRunner:TestRunner = new TestRunner();
 			testRunner.addTestCase(new HelloTestCase());
+			throw(new Error("asasa"));
 			testRunner.run();
 		}
 	}

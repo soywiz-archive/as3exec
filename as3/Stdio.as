@@ -45,9 +45,14 @@ package {
 		}
 		
 		static public function onUncaughtError(e:UncaughtErrorEvent):void {
-			Stdio.writefln("onUncaughtError");
-			Stdio.writefln(e.toString());
-			Stdio.writefln(e.error);
+			try {
+				//Stdio.writefln("onUncaughtError");
+				Stdio.writefln(e);
+				//Stdio.writefln(e.error);
+				Stdio.writefln(e.error.getStackTrace().toString());
+			} catch (e:*) {
+				
+			}
 			Stdio.exit(-1);
 		}
 	}

@@ -194,6 +194,7 @@ namespace as3exec
 		{
 			ShouldExit = true;
 			//throw (new Exception("Exiting"));
+			Application.Exit();
 			return null;
 		}
 	}
