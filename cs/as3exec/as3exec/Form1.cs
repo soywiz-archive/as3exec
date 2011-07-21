@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using ExControls;
+using System.IO;
 
 namespace as3exec
 {
@@ -92,11 +93,25 @@ namespace as3exec
 				//Application.Exit();
 				//return;
 			}
-			flash.LoadMovie(0, args[0]);
-			flash.Size = Size;
-			flash.Quality = 1;
-			flash.GotoFrame(0);
-			flash.Play();
+			var MoviePath = Path.GetFullPath(args[0]);
+			if (!File.Exists(MoviePath)) throw(new Exception(String.Format("File '{0}' doesn't exist", MoviePath)));
+
+			flash.LoadMovie(0, MoviePath);
+			try
+			{
+				flash.Size = Size;
+				flash.Quality = 1;
+				flash.GotoFrame(0);
+				flash.Play();
+				if (flash.TotalFrames == 0)
+				{
+					throw(new Exception(""));
+				}
+			}
+			catch (Exception Exception)
+			{
+				throw (new Exception(String.Format("Can't load movie '{0}'", MoviePath), Exception));
+			}
 			//Console.WriteLine(flash.Playing);
 
 
