@@ -10,7 +10,9 @@ package {
 			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			
 			Stdio.writefln(
-				"Version: " + Capabilities.os + " - " + Capabilities.cpuArchitecture + " :: " + Capabilities.version + " :: " + Capabilities.playerType + " :: " + (Capabilities.isDebugger ? "Debugger" : "Retail")
+				"Version: " + Capabilities.os + " - " + Capabilities.cpuArchitecture +
+				" :: " + Capabilities.version + " :: " + Capabilities.playerType +
+				" :: " + (Capabilities.isDebugger ? "Debugger" : "Retail")
 			);
 			Stdio.writefln("");
 		}

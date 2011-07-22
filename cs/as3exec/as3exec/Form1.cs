@@ -94,10 +94,25 @@ namespace as3exec
 			}
 		}
 
+		/// C:\Windows\SysWOW64\Macromed\Flash
 		void ExecuteFlash()
 		{
-			//flash = new ExAxShockwaveFlash("Flash10u.ocx");
-			flash = new ExAxShockwaveFlash();
+			var ocxNames = new string[] { "Flash11a.ocx", "Flash10u.ocx" };
+
+			foreach (var ocxName in ocxNames)
+			{
+				String ocxPath = Path.GetFullPath(ocxName);
+				if (File.Exists(ocxPath))
+				{
+					flash = new ExAxShockwaveFlash(ocxPath);
+					break;
+				}
+			}
+
+			if (flash == null)
+			{
+				flash = new ExAxShockwaveFlash();
+			}
 
 			flash.BeginInit();
 			{
