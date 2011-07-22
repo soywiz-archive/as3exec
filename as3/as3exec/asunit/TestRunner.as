@@ -36,13 +36,30 @@ package as3exec.asunit {
 		public function addTestCase(testCase:TestCase):TestRunner {
 			var xml:XML = describeType(testCase);
 			var count:int = 0;
+			var methods:Array = [];
+			
 			for each (var method:* in xml.method) {
 				if (/^test/.test(method.@name)) {
-					queue.push([testCase, method]);
+					methods.push([testCase, method, getQualifiedClassName(testCase) + "." + method.@name]);
 					count++;
 				}
 				//trace(method);
 			}
+			
+			methods = methods.sort(function(_a:*, _b:*):int {
+				var a:String = _a[2], b:String = _b[2];
+				if (a == b) return 0;
+				if (a < b) {
+					return -1;
+				} else {
+					return +1;
+				}
+			});
+			
+			for each (var row:* in methods) {
+				queue.push(row);
+			}
+
 			if (count == 0) {
 				Stdio.writefln("WARNING: Class '" + xml.@name + "' doesn't have public methods starting by 'test'");
 			}
@@ -54,7 +71,7 @@ package as3exec.asunit {
 				var row:* = queue.shift();
 				var testCase:TestCase = row[0];
 				var method:* = row[1];
-				var methodPath:String = getQualifiedClassName(testCase) + "." + method.@name;
+				var methodPath:String = row[2];
 
 				var completedCallback:Function = function():void {
 					Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
