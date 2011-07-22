@@ -3,6 +3,10 @@ package asunit {
 	import flash.utils.setTimeout;
 	public class TestRunner {
 		protected var queue:Array;
+		protected var testCaseFailed:int;
+		protected var testCaseTotal:int;
+		protected var assertsFailed:int;
+		protected var assertsTotal:int;
 		
 		public function TestRunner() {
 			queue = [];
@@ -16,7 +20,7 @@ package asunit {
 			}
 		}
 		
-		public function executeTestMethod():void {
+		public function executeTestMethod(endedCallback:Function):void {
 			if (queue.length > 0) {
 				var row:* = queue.shift();
 				var testCase:TestCase = row[0];
@@ -25,30 +29,39 @@ package asunit {
 				if (/^test/.test(method.@name)) {
 					var completedCallback:Function = function():void {
 						Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
-						executeTestMethod();
+						executeTestMethod(endedCallback);
 					};
 					
 					Stdio.writef(methodPath + "...");
 					{
-						
 						testCase.__init(completedCallback);
 						testCase[method.@name]();
 					}
+					
+					assertsTotal  += testCase.totalCount;
+					assertsFailed += testCase.errorCount;
 					
 					//trace(method);
 					if (testCase.waitAsyncCount <= 0) {
 						setTimeout(completedCallback, 0);
 					}
 				} else {
-					setTimeout(executeTestMethod, 0)
+					setTimeout(function():void {
+						executeTestMethod(endedCallback);
+					}, 0)
 				}
 			} else {
-				Stdio.exit();
+				endedCallback();
 			}
 		}
 		
 		public function run():void {
-			executeTestMethod();
+			executeTestMethod(function():void {
+				Stdio.writefln("");
+				Stdio.writefln("Results: " + (assertsTotal - assertsFailed) + " succeded / " + assertsTotal + " total");
+				Stdio.writefln("Failed: " + assertsFailed);
+				Stdio.exit();
+			});
 		}
 	}
 }

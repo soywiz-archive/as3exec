@@ -6,17 +6,20 @@ package asunit {
 			
 		}
 		
+		public var totalCount:int = 0;
 		public var errorCount:int = 0;
 		public var waitAsyncCount:int = 0;
 		public var waitAsyncCallback:Function;
 		
 		public function __init(waitAsyncCallback:Function):void {
+			this.totalCount = 0;
 			this.errorCount = 0;
 			this.waitAsyncCount = 0;
 			this.waitAsyncCallback = waitAsyncCallback;
 		}
 
 		private function assert(type:String, result:Boolean):void {
+			totalCount++;
 			if (!result) {
 				var errorStr:String;
 				errorCount++;

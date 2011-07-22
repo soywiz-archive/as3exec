@@ -27,10 +27,10 @@ package
 			var sprite:Sprite = new Sprite();
 			sprite.graphics.lineStyle(1, 0xFF0000);
 			sprite.graphics.moveTo(0, 0);
-			sprite.graphics.lineTo(5, 5);
+			sprite.graphics.lineTo(5, 0);
 			bitmapData.draw(sprite);
-			Stdio.writefln(bitmapData.getPixel32(0, 0));
-			Stdio.writefln(bitmapData.getPixel32(0, 5));
+			assertEquals(0xffff0000, bitmapData.getPixel32(0, 0));
+			assertEquals(0x00000000, bitmapData.getPixel32(0, 1));
 		}
 	}
 
