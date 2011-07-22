@@ -32,6 +32,30 @@ package
 			assertEquals(0xffff0000, bitmapData.getPixel32(0, 0));
 			assertEquals(0x00000000, bitmapData.getPixel32(0, 1));
 		}
+
+		public function testEqualsArrayIgnoringOrderWorksOnDisordered():void {
+			assertEqualsArrayIgnoringOrder([1, 2, 3, 4], [4, 3, 2, 1]);
+		}
+
+		public function testEqualsArrayIgnoringOrderFailsOnLengthMismatch():void {
+			expectException(Error, function():void {
+				assertEqualsArrayIgnoringOrder([1, 2, 3, 4], [1, 2, 3, 4, 5]);
+			});
+
+			expectException(Error, function():void {
+				assertEqualsArrayIgnoringOrder([1, 2, 3, 4, 5], [1, 2, 3, 4]);
+			});
+		}
+		
+		public function testEqualsArrayFailsOnDisordered():void {
+			expectException(Error, function():void {
+				assertEqualsArray([1, 2, 3, 4], [4, 3, 2, 1]);
+			});
+		}
+
+		public function testEqualsArraySuccessOnOrdered():void {
+			assertEqualsArray([1, 2, 3, 4], [1, 2, 3, 4]);
+		}
 	}
 
 }

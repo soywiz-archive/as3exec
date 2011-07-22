@@ -1,6 +1,7 @@
 package as3exec {
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
+	import flash.display.StageScaleMode;
 	import flash.external.ExternalInterface;
 	import flash.events.UncaughtErrorEvent;
 	import flash.display.Stage;
@@ -10,10 +11,12 @@ package as3exec {
 
 	public class Stdio {
 		static protected var textField:TextField;
+		static protected var buffer:String = "";
 		
 		static public function init(sprite:Sprite):void {
 			sprite.stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			sprite.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+			sprite.stage.scaleMode = StageScaleMode.NO_SCALE;
 			
 			if (!ExternalInterface.available) {
 				textField = new TextField();
@@ -41,8 +44,6 @@ package as3exec {
 			throw(new Error("TODO"));
 			return "";
 		}
-		
-		static protected var buffer:String;
 		
 		static protected function flush(complete:Boolean = false):void {
 			if (!ExternalInterface.available) {

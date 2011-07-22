@@ -63,7 +63,13 @@ package as3exec.asunit {
 				Stdio.writef(methodPath + "...");
 				{
 					testCase.__init(completedCallback);
-					testCase[method.@name]();
+					testCase.setUp();
+					{
+						testCase.__captureAsserts(function():void {
+							testCase[method.@name]();
+						});
+					}
+					testCase.tearDown();
 				}
 				
 				assertsTotal  += testCase.totalCount;
