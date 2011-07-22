@@ -1,6 +1,8 @@
-package asunit {
+package as3exec.asunit {
+	import as3exec.Stdio;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
+
 	public class TestCase {
 		public function TestCase() {
 			

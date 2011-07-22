@@ -1,6 +1,6 @@
 package  
 {
-	import asunit.TestCase;
+	import as3exec.asunit.TestCase;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;

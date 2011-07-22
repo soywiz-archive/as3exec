@@ -1,8 +1,10 @@
-package asunit {
+package as3exec.asunit {
+	import as3exec.Stdio;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.utils.describeType;
 	import flash.utils.setTimeout;
+
 	public class TestRunner {
 		protected var queue:Array;
 		protected var testCaseFailed:int;

@@ -1,4 +1,4 @@
-package {
+package as3exec {
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.external.ExternalInterface;
@@ -41,13 +41,36 @@ package {
 			throw(new Error("TODO"));
 			return "";
 		}
+		
+		static protected var buffer:String;
+		
+		static protected function flush(complete:Boolean = false):void {
+			if (!ExternalInterface.available) {
+				if (buffer.length) {
+					var lines:Array = buffer.split("\n");
+					if (!complete) {
+						buffer = lines[lines.length - 1];
+						lines = lines.slice(0, lines.length - 1);
+					}
+					for each (var line:String in lines) {
+						trace(line);
+						textField.appendText(line + "\n");
+					}
+				}
+			}
+		}
+		
+		static protected function appendBuffer(str:String):void {
+			buffer += str;
+			if (buffer.indexOf("\n") != -1) flush();
+			if (buffer.length > 4096) flush();
+		}
 
 		static public function writef(str:*):void {
 			if (ExternalInterface.available) {
 				ExternalInterface.call("writef", '' + str);
 			} else {
-				trace(str);
-				textField.appendText(str);
+				appendBuffer(str);
 			}
 		}
 		
@@ -55,8 +78,8 @@ package {
 			if (ExternalInterface.available) {
 				ExternalInterface.call("writefln", '' + str);
 			} else {
-				trace(str);
-				textField.appendText(str + "\n");
+				appendBuffer(str + "\n");
+				flush();
 			}
 		}
 
@@ -69,6 +92,8 @@ package {
 		}
 		
 		static public function exit(errorCode:int = 0):void {
+			flush(true);
+			
 			if (ExternalInterface.available) {
 				ExternalInterface.call("exit", errorCode);
 			} else {

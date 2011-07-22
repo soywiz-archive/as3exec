@@ -1,5 +1,5 @@
 package  {
-	import asunit.TestRunner;
+	import as3exec.asunit.TestRunner;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.utils.setTimeout;

@@ -97,6 +97,17 @@ namespace as3exec
 		/// C:\Windows\SysWOW64\Macromed\Flash
 		void ExecuteFlash()
 		{
+			if (args.Length < 1)
+			{
+				Console.WriteLine("as3exec <file.swf>");
+				ShouldExit = true;
+				return;
+				//throw (new Exception("Exiting"));
+				//Application.ExitThread();
+				//Application.Exit();
+				//return;
+			}
+
 			var ocxNames = new string[] { "Flash11a.ocx", "Flash10u.ocx" };
 
 			String OcxPathBase = Directory.GetParent(Application.ExecutablePath).FullName;
@@ -137,16 +148,6 @@ namespace as3exec
 
 			//args = new string[] { @"D:\OurClientV2\src\UnitTests\bin\UnitTests.swf" };
 
-			if (args.Length < 1)
-			{
-				Console.WriteLine("as3exec <file.swf>");
-				ShouldExit = true;
-				return;
-				//throw (new Exception("Exiting"));
-				//Application.ExitThread();
-				//Application.Exit();
-				//return;
-			}
 			var MoviePath = Path.GetFullPath(args[0]);
 			if (!File.Exists(MoviePath)) throw(new Exception(String.Format("File '{0}' doesn't exist", MoviePath)));
 
