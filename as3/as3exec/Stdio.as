@@ -13,12 +13,16 @@ package as3exec {
 		static protected var textField:TextField;
 		static protected var buffer:String = "";
 		
+		static protected function get hasVisualConsole():Boolean {
+			return Capabilities.playerType != "ActiveX";
+		}
+		
 		static public function init(sprite:Sprite):void {
 			sprite.stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			sprite.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			sprite.stage.scaleMode = StageScaleMode.NO_SCALE;
 			
-			if (!ExternalInterface.available) {
+			if (hasVisualConsole) {
 				textField = new TextField();
 				textField.defaultTextFormat = new TextFormat("Courier New", 12);
 				textField.multiline = true;
@@ -46,7 +50,7 @@ package as3exec {
 		}
 		
 		static protected function flush(complete:Boolean = false):void {
-			if (!ExternalInterface.available) {
+			if (hasVisualConsole) {
 				if (buffer.length) {
 					var lines:Array = buffer.split("\n");
 					if (!complete) {
