@@ -99,9 +99,11 @@ namespace as3exec
 		{
 			var ocxNames = new string[] { "Flash11a.ocx", "Flash10u.ocx" };
 
+			String OcxPathBase = Directory.GetParent(Application.ExecutablePath).FullName;
+
 			foreach (var ocxName in ocxNames)
 			{
-				String ocxPath = Path.GetFullPath(ocxName);
+				String ocxPath = String.Format(@"{0}\{1}", OcxPathBase, ocxName);
 				if (File.Exists(ocxPath))
 				{
 					flash = new ExAxShockwaveFlash(ocxPath);

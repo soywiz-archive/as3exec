@@ -16,10 +16,11 @@ package asunit {
 		
 		static public function fromSprite(sprite:Sprite, callback:Function /*(testRunner:TestRunner):void*/):void {
 			var that:TestRunner = new TestRunner();
-			Stdio.init(sprite.stage, sprite.loaderInfo);
 			
 			var init:Function = function():void {
 				sprite.removeEventListener(Event.ADDED_TO_STAGE, init);
+				Stdio.init(sprite);
+
 				setTimeout(function():void {
 					callback(that);
 					that.run();

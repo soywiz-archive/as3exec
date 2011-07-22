@@ -1,13 +1,33 @@
 package {
+	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.external.ExternalInterface;
 	import flash.events.UncaughtErrorEvent;
 	import flash.display.Stage;
 	import flash.system.Capabilities;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
 
 	public class Stdio {
-		static public function init(stage:Stage, loaderInfo:*):void {
-			stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
-			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+		static protected var textField:TextField;
+		
+		static public function init(sprite:Sprite):void {
+			sprite.stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+			sprite.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+			
+			if (!ExternalInterface.available) {
+				textField = new TextField();
+				textField.defaultTextFormat = new TextFormat("Courier New", 12);
+				textField.multiline = true;
+				textField.border = false;
+				textField.condenseWhite = false;
+				textField.x = 0;
+				textField.y = 0;
+				textField.width = sprite.stage.stageWidth;
+				textField.height = sprite.stage.stageHeight;
+				textField.text = "";
+				sprite.addChild(textField);
+			}
 			
 			Stdio.writefln(
 				"Version: " + Capabilities.os + " - " + Capabilities.cpuArchitecture +
@@ -27,6 +47,7 @@ package {
 				ExternalInterface.call("writef", '' + str);
 			} else {
 				trace(str);
+				textField.appendText(str);
 			}
 		}
 		
@@ -35,6 +56,7 @@ package {
 				ExternalInterface.call("writefln", '' + str);
 			} else {
 				trace(str);
+				textField.appendText(str + "\n");
 			}
 		}
 
