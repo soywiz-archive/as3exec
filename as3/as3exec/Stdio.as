@@ -61,6 +61,7 @@ package as3exec {
 						trace(line);
 						textField.appendText(line + "\n");
 					}
+					textField.scrollV = textField.maxScrollV;
 				}
 			}
 		}
