@@ -9,7 +9,10 @@ package {
 			stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			
-			Stdio.writefln("Version: " + Capabilities.version + " :: " + (Capabilities.isDebugger ? "Debugger" : "Retail"));
+			Stdio.writefln(
+				"Version: " + Capabilities.os + " - " + Capabilities.cpuArchitecture + " :: " + Capabilities.version + " :: " + Capabilities.playerType + " :: " + (Capabilities.isDebugger ? "Debugger" : "Retail")
+			);
+			Stdio.writefln("");
 		}
 		
 		static public function format(format:String, ...rest):String {

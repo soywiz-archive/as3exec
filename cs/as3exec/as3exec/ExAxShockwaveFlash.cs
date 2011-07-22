@@ -15,6 +15,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Collections;
+using System.Reflection;
 
 namespace ExControls
 {
@@ -45,54 +46,175 @@ namespace ExControls
 			noScale = 3,
 		}
 
+		//DllGetClassObject fuction pointer signature
+		private delegate int DllGetClassObject(ref Guid ClassId, ref Guid InterfaceId, [Out, MarshalAs(UnmanagedType.Interface)] out object ppunk);
+
+		//Some win32 methods to load\unload dlls and get a function pointer
+		private class Win32NativeMethods
+		{
+			[DllImport("kernel32.dll")]
+			public static extern IntPtr LoadLibrary(string lpFileName);
+
+			[DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+			public static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
+
+			[DllImport("kernel32.dll")]
+			public static extern bool FreeLibrary(IntPtr hModule);
+		}
+
+		/*
+		private static IUnknown GetClassFactoryFromDll(string dllName, string filterPersistClass)
+		{
+			//Load the dll
+			IntPtr dllHandle = Win32NativeMethods.LoadLibrary(dllName);
+			if (dllHandle == IntPtr.Zero)
+				return null;
+
+			//Keep a reference to the dll until the process\AppDomain dies
+			_dllList.AddDllHandle(dllHandle);
+
+			//Get a pointer to the DllGetClassObject function
+			IntPtr dllGetClassObjectPtr = Win32NativeMethods.GetProcAddress(dllHandle, "DllGetClassObject");
+			if (dllGetClassObjectPtr == IntPtr.Zero)
+				return null;
+
+			//Convert the function pointer to a .net delegate
+			DllGetClassObject dllGetClassObject = (DllGetClassObject)Marshal.GetDelegateForFunctionPointer(dllGetClassObjectPtr, typeof(DllGetClassObject));
+
+			//Call the DllGetClassObject to retreive a class factory for out Filter class
+			Guid filterPersistGUID = new Guid(filterPersistClass);
+			Guid IClassFactoryGUID = new Guid("00000001-0000-0000-C000-000000000046"); //IClassFactory class id
+			Object unk;
+			if (dllGetClassObject(ref filterPersistGUID, ref IClassFactoryGUID, out unk) != 0)
+				return null;
+
+			//Yippie! cast the returned object to IClassFactory
+			return (unk as IClassFactory);
+		}
+		*/
+
+		/// <summary>
+		/// Holds a list of dll handles and unloads the dlls 
+		/// in the destructor
+		/// </summary>
+		private class DllList {
+			private List<IntPtr> _dllList=new List<IntPtr>();
+			public void AddDllHandle(IntPtr dllHandle) {
+				lock (_dllList) {
+					_dllList.Add(dllHandle);
+				}
+			}
+
+			~DllList() {
+				foreach (IntPtr dllHandle in _dllList) {
+					try {
+						Win32NativeMethods.FreeLibrary(dllHandle);
+					} catch {
+					};
+				}
+			}
+		}
+
+		static DllList _dllList=new DllList();
+
+		[ComVisible(false)]
+		[ComImport, InterfaceType(ComInterfaceType.InterfaceIsIUnknown), Guid("00000001-0000-0000-C000-000000000046")]
+		internal interface IClassFactory
+		{
+			void CreateInstance([MarshalAs(UnmanagedType.Interface)] object pUnkOuter, ref Guid refiid, [MarshalAs(UnmanagedType.Interface)] out object ppunk);
+			void LockServer(bool fLock);
+		}
+
+		internal static IClassFactory GetClassFactory(string dllName, string filterPersistClass) {
+			//Load the class factory from the dll
+			IClassFactory classFactory=GetClassFactoryFromDll(dllName, filterPersistClass);
+			return classFactory;
+		}
+
+		private static IClassFactory GetClassFactoryFromDll(string dllName, string filterPersistClass) {
+			//Load the dll
+			IntPtr dllHandle=Win32NativeMethods.LoadLibrary(dllName);
+			if (dllHandle==IntPtr.Zero)
+			return null;
+
+			//Keep a reference to the dll until the process\AppDomain dies
+			//_dllList.AddDllHandle(dllHandle);
+
+			//Get a pointer to the DllGetClassObject function
+			IntPtr dllGetClassObjectPtr=Win32NativeMethods.GetProcAddress(dllHandle, "DllGetClassObject");
+			if (dllGetClassObjectPtr==IntPtr.Zero)
+			return null;
+
+			//Convert the function pointer to a .net delegate
+			DllGetClassObject dllGetClassObject=(DllGetClassObject)Marshal.GetDelegateForFunctionPointer(dllGetClassObjectPtr, typeof(DllGetClassObject));
+
+			//Call the DllGetClassObject to retreive a class factory for out Filter class
+			Guid filterPersistGUID=new Guid(filterPersistClass);
+			Guid IClassFactoryGUID=new Guid("00000001-0000-0000-C000-000000000046"); //IClassFactory class id
+			Object unk;
+			if (dllGetClassObject(ref filterPersistGUID, ref IClassFactoryGUID, out unk) != 0)
+			{
+				return null;
+			}
+
+			//Yippie! cast the returned object to IClassFactory
+			return (unk as IClassFactory);
+		}
+
+		protected override object CreateInstanceCore(Guid clsid)
+		{
+			// Temp
+			//this.ocxPath = "Flash10u.ocx";
+
+			if (this.ocxPath != null)
+			{
+				IntPtr dllOcxPtr = Win32NativeMethods.LoadLibrary(this.ocxPath);
+				if (dllOcxPtr.ToInt64() == 0) throw (new Exception(String.Format("Can't find '" + dllOcxPtr + "'")));
+				IntPtr dllGetClassObjectPtr = Win32NativeMethods.GetProcAddress(dllOcxPtr, "DllGetClassObject");
+
+				DllGetClassObject dllGetClassObject = (DllGetClassObject)Marshal.GetDelegateForFunctionPointer(dllGetClassObjectPtr, typeof(DllGetClassObject));
+				Object unk;
+
+				// UnsafeNativeMethods.CoCreateInstance(ref clsid, null, 1, ref NativeMethods.ActiveX.IID_IUnknown);
+
+				Guid IID_IUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
+				var ClassFactory = GetClassFactoryFromDll(this.ocxPath, clsid.ToString());
+				ClassFactory.CreateInstance(null, ref IID_IUnknown, out unk);
+
+				//object obj = UnsafeNativeMethods.CoCreateInstance(ref clsid, null, 1, ref NativeMethods.ActiveX.IID_IUnknown);
+				//this.instance = obj;
+				typeof(AxHost).GetField("instance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, unk);
+
+				//clsid.
+				//Console.WriteLine("CreateInstanceCore(" + clsid + ") :: " + dllOcxPtr + " :: " + dllGetClassObjectPtr);
+				Console.WriteLine("Created from '" + this.ocxPath + "'");
+				//return unk;
+				//GetProcAddress
+				return unk;
+			}
+			else
+			{
+				return base.CreateInstanceCore(clsid);
+			}
+		}
+
+		string ocxPath;
+
+		public ExAxShockwaveFlash(string ocxPath)
+		{
+
+			this.ocxPath = ocxPath;
+			init();
+		}
+
 		public ExAxShockwaveFlash()
 		{
-			//this.FSCommand
-			//this.CallFunction("alert(1);");
-			//this.fsç
-			//this.
-			//this.drawTo
-			//this.DrawToBitmap
-			/*
-			this.MouseRightClick += delegate(object o)
-			{
-				Console.WriteLine(this.ExternalInterfaceCall("testRetVoid"));
-			};
+			this.ocxPath = null;
+			init();
+		}
 
-			this.MouseLeftClick += delegate(object o)
-			{
-				//Console.WriteLine(this.CallFunction2("testRetStr", "test"));
-				Console.WriteLine(this.ExternalInterfaceCall("testRetStr", 10));
-				//Console.WriteLine(((dynamic)this.CallFunction2<String>("testRetArray"))["0"]);
-				//Console.WriteLine(this.CallFunction2("testRetBool"));
-			};
-			*/
-
-			/*
-			this.MouseLeftClick += delegate(object o)
-			{
-				var bmp = TakeScreenshot();
-				//var bmp = CaptureControl(new Button());
-				bmp.Save(@"c:\temp\11.png");
-
-				//bmp.LockBits();
-				//Console.WriteLine(bmp.GetPixel(71, 71));
-				//new Bitmap(
-				//Console.WriteLine(g.);
-			};*/
-			
-			//this.WMode = "Transparent";
-			/*
-			this.SetStyle(
-			ControlStyles.SupportsTransparentBackColor |
-			ControlStyles.OptimizedDoubleBuffer |
-			ControlStyles.AllPaintingInWmPaint |
-			ControlStyles.ResizeRedraw |
-			ControlStyles.UserPaint, true);
-			this.BackColor = Color.Transparent;
-
-			this.BackgroundColor = Color.Transparent.ToArgb();
-			*/
+		protected void init()
+		{
 			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 			SetStyle(ControlStyles.Opaque, true);
 			SetStyle(ControlStyles.ResizeRedraw, true);

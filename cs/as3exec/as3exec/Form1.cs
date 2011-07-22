@@ -96,23 +96,25 @@ namespace as3exec
 
 		void ExecuteFlash()
 		{
+			//flash = new ExAxShockwaveFlash("Flash10u.ocx");
 			flash = new ExAxShockwaveFlash();
 
 			flash.BeginInit();
 			{
-				this.Controls.Add(flash);
-				flash.Size = Size;
+				//flash.Size = Size;
+				flash.Size = new Size(1, 1);
 				//flash.Visible = false;
+				this.Controls.Add(flash);
 			}
 			flash.EndInit();
 			//flash.PreferredSize = Size;
 
 			//flash.SetVariable("Arguments", flash.SerializeObject(args));
 
-			flash.RegisterCallback("getargs", as3_getargs);
-			flash.RegisterCallback("writef", as3_writef);
+			flash.RegisterCallback("getargs" , as3_getargs);
+			flash.RegisterCallback("writef"  , as3_writef);
 			flash.RegisterCallback("writefln", as3_writefln);
-			flash.RegisterCallback("exit", as3_exit);
+			flash.RegisterCallback("exit"    , as3_exit);
 
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(args));
 
@@ -131,11 +133,11 @@ namespace as3exec
 			var MoviePath = Path.GetFullPath(args[0]);
 			if (!File.Exists(MoviePath)) throw(new Exception(String.Format("File '{0}' doesn't exist", MoviePath)));
 
-			flash.LoadMovie(0, MoviePath);
+			flash.Movie = MoviePath;
+			//flash.LoadMovie(0, MoviePath);
 			try
 			{
 				//flash.Size = Size;
-				flash.Size = new Size(1, 1);
 				flash.Quality = 1;
 				flash.GotoFrame(0);
 				flash.Play();
