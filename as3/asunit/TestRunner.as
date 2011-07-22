@@ -1,4 +1,6 @@
 package asunit {
+	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.utils.describeType;
 	import flash.utils.setTimeout;
 	public class TestRunner {
@@ -12,12 +14,28 @@ package asunit {
 			queue = [];
 		}
 		
-		public function addTestCase(testCase:TestCase):void {
+		static public function fromSprite(sprite:Sprite, callback:Function /*(testRunner:TestRunner):void*/):void {
+			var that:TestRunner = new TestRunner();
+			Stdio.init(sprite.stage, sprite.loaderInfo);
+			
+			var init:Function = function():void {
+				sprite.removeEventListener(Event.ADDED_TO_STAGE, init);
+				setTimeout(function():void {
+					callback(that);
+					that.run();
+				}, 0);
+			};
+			
+			if (sprite.stage) init(); else sprite.addEventListener(Event.ADDED_TO_STAGE, init);
+		}
+		
+		public function addTestCase(testCase:TestCase):TestRunner {
 			var xml:XML = describeType(testCase);
 			for each (var method:* in xml.method) {
 				queue.push([testCase, method]);
 				//trace(method);
 			}
+			return this;
 		}
 		
 		public function executeTestMethod(endedCallback:Function):void {
