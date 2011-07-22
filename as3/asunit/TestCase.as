@@ -18,7 +18,7 @@ package asunit {
 			this.waitAsyncCallback = waitAsyncCallback;
 		}
 
-		private function assert(type:String, result:Boolean):void {
+		private function assert(type:String, result:Boolean, message:String = ""):void {
 			totalCount++;
 			if (!result) {
 				var errorStr:String;
@@ -30,7 +30,7 @@ package asunit {
 						//Stdio.writefln(e.getStackTrace().toString());
 						errorStr = e.getStackTrace().toString();
 						errorStr = errorStr.split("\n").slice(3).join("\n");
-						Stdio.writefln("Assert '" + type + "' Failed ::\n" + errorStr);
+						Stdio.writefln("Assert '" + type + "' Failed :: " + message + "\n" + errorStr);
 					}
 				} catch (e:*) {
 					Stdio.writefln("Assert Failed");
@@ -47,11 +47,11 @@ package asunit {
 		}
 		
 		protected function assertEquals(expected:*, returned:*):void {
-			assert("assertEquals", expected == returned);
+			assert("assertEquals", expected == returned, expected + " != " + returned);
 		}
 
 		protected function assertNotEquals(expected:*, returned:*):void {
-			assert("assertNotEquals", expected != returned);
+			assert("assertNotEquals", expected != returned, expected + " == " + returned);
 		}
 		
 		protected function addAsync(callback:Function, timeout:int = 1000):Function {

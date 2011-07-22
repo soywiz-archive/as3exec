@@ -31,9 +31,16 @@ package asunit {
 		
 		public function addTestCase(testCase:TestCase):TestRunner {
 			var xml:XML = describeType(testCase);
+			var count:int = 0;
 			for each (var method:* in xml.method) {
-				queue.push([testCase, method]);
+				if (/^test/.test(method.@name)) {
+					queue.push([testCase, method]);
+					count++;
+				}
 				//trace(method);
+			}
+			if (count == 0) {
+				Stdio.writefln("WARNING: Class '" + xml.@name + "' doesn't have public methods starting by 'test'");
 			}
 			return this;
 		}
@@ -44,29 +51,24 @@ package asunit {
 				var testCase:TestCase = row[0];
 				var method:* = row[1];
 				var methodPath:String = method.@declaredBy + "." + method.@name;
-				if (/^test/.test(method.@name)) {
-					var completedCallback:Function = function():void {
-						Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
-						executeTestMethod(endedCallback);
-					};
-					
-					Stdio.writef(methodPath + "...");
-					{
-						testCase.__init(completedCallback);
-						testCase[method.@name]();
-					}
-					
-					assertsTotal  += testCase.totalCount;
-					assertsFailed += testCase.errorCount;
-					
-					//trace(method);
-					if (testCase.waitAsyncCount <= 0) {
-						setTimeout(completedCallback, 0);
-					}
-				} else {
-					setTimeout(function():void {
-						executeTestMethod(endedCallback);
-					}, 0)
+
+				var completedCallback:Function = function():void {
+					Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
+					executeTestMethod(endedCallback);
+				};
+				
+				Stdio.writef(methodPath + "...");
+				{
+					testCase.__init(completedCallback);
+					testCase[method.@name]();
+				}
+				
+				assertsTotal  += testCase.totalCount;
+				assertsFailed += testCase.errorCount;
+				
+				//trace(method);
+				if (testCase.waitAsyncCount <= 0) {
+					setTimeout(completedCallback, 0);
 				}
 			} else {
 				endedCallback();
