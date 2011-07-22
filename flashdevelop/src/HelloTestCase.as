@@ -15,11 +15,32 @@ package
 			assertFalse(false);
 		}
 
-		public function testTimeout():void {
+		public function testEquals():void {
+			assertEquals(1, true);
+		}
+
+		public function testNotEquals():void {
+			assertNotEquals(1, false);
+		}
+
+		public function testSame():void {
+			assertSame(2, 2);
+		}
+
+		public function testNotSame():void {
+			assertNotSame(false, 0);
+		}
+		
+		public function testSameFailing():void {
+			expectException(Error, function():void {
+				assertSame(1, true);
+			});
+		}
+		
+		public function testAddAsync():void {
 			setTimeout(addAsync(function(...rest):void {
 				assertTrue(true);
 			}, 1000), 20);
-			//assertTrue(false);
 		}
 		
 		public function testDraw():void {
@@ -55,6 +76,16 @@ package
 
 		public function testEqualsArraySuccessOnOrdered():void {
 			assertEqualsArray([1, 2, 3, 4], [1, 2, 3, 4]);
+		}
+		
+		public function testEqualsFloat():void {
+			assertEqualsFloat(1 / 7, 0.1428, 0.0001);
+		}
+
+		public function testEqualsFloatLessToleranceFails():void {
+			expectException(Error, function():void {
+				assertEqualsFloat(1 / 7, 0.1428, 0.00001);
+			});
 		}
 	}
 
