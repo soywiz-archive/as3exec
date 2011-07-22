@@ -6,7 +6,7 @@ package
 	import flash.display.Sprite;
 	import flash.utils.setTimeout;
 
-	public class HelloTestCase extends TestCase {
+	public class TestTestCase extends TestCase {
 		public function testTrue():void {
 			assertTrue(true);
 		}
