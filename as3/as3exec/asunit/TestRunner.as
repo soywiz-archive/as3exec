@@ -3,6 +3,7 @@ package as3exec.asunit {
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.utils.describeType;
+	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
 
 	public class TestRunner {
@@ -53,7 +54,7 @@ package as3exec.asunit {
 				var row:* = queue.shift();
 				var testCase:TestCase = row[0];
 				var method:* = row[1];
-				var methodPath:String = method.@declaredBy + "." + method.@name;
+				var methodPath:String = getQualifiedClassName(testCase) + "." + method.@name;
 
 				var completedCallback:Function = function():void {
 					Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
