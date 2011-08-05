@@ -1,6 +1,7 @@
 package as3exec.asunit {
 	import as3exec.Stdio;
 	import flash.display.Sprite;
+	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
@@ -74,7 +75,11 @@ package as3exec.asunit {
 				var methodPath:String = row[2];
 
 				var completedCallback:Function = function():void {
-					Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
+					if (testCase.totalCount == 0) {
+						Stdio.writefln("No Asserts");
+					} else {
+						Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
+					}
 					executeTestMethod(endedCallback);
 				};
 				
