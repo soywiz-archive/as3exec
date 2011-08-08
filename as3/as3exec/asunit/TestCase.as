@@ -8,6 +8,10 @@ package as3exec.asunit {
 		public function TestCase() {
 		}
 		
+		final public function __setUp():void {
+			executionStep = 0;
+		}
+		
 		public function setUp():void {
 		}
 
@@ -18,7 +22,9 @@ package as3exec.asunit {
 		public var errorCount:int = 0;
 		public var waitAsyncCount:int = 0;
 		public var waitAsyncCallback:Function;
-		
+
+		private var executionStep:int = 0;
+
 		public function __init(waitAsyncCallback:Function):void {
 			this.totalCount = 0;
 			this.errorCount = 0;
@@ -53,6 +59,10 @@ package as3exec.asunit {
 		
 		final protected function fail(message:String = ""):void {
 			assert("fail", false, message);
+		}
+		
+		final protected function assertExecutionStep(index:int = 0, message:String = ""):void {
+			assertEquals(index, executionStep++);
 		}
 		
 		final protected function success(message:String = ""):void {
@@ -178,9 +188,9 @@ package as3exec.asunit {
 			waitAsyncCount += expectedExecutedTimes;
 			
 			function continueExecution():void {
+				clearTimeout(timeoutId);
 				waitAsyncCount--;
 				if (waitAsyncCount <= 0) {
-					clearTimeout(timeoutId);
 					setTimeout(waitAsyncCallback, 0);
 				}
 			}

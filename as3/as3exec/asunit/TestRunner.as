@@ -93,6 +93,7 @@ package as3exec.asunit {
 				Stdio.writef(methodPath + "...");
 				{
 					testCase.__init(completedCallback);
+					testCase.__setUp();
 					testCase.setUp();
 					{
 						testCase.__captureAsserts(function():void {
