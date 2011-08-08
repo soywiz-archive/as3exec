@@ -73,14 +73,21 @@ package as3exec.asunit {
 				var testCase:TestCase = row[0];
 				var method:* = row[1];
 				var methodPath:String = row[2];
+				var calledAlready:Boolean = false;
 
 				var completedCallback:Function = function():void {
+					if (calledAlready) return;
+					calledAlready = true;
+					
 					if (testCase.totalCount == 0) {
 						Stdio.writefln("No Asserts");
 					} else {
 						Stdio.writefln(testCase.errorCount ? "Fail" : "Ok");
 					}
-					executeTestMethod(endedCallback);
+					
+					setTimeout(function() {
+						executeTestMethod(endedCallback);
+					}, 0);
 				};
 				
 				Stdio.writef(methodPath + "...");

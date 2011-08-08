@@ -55,6 +55,18 @@ package as3exec.asunit {
 			assert("fail", false, message);
 		}
 		
+		final protected function success(message:String = ""):void {
+			assert("success", true, message);
+		}
+
+		final protected function assertFail(message:String = ""):void {
+			fail(message);
+		}
+
+		final protected function assertSuccess(message:String = ""):void {
+			success(message);
+		}
+
 		final protected function assertTrue(actual:Boolean):void {
 			assert("assertTrue", actual);
 		}
@@ -120,7 +132,7 @@ package as3exec.asunit {
 		final protected function expectException(exceptionType:Class, code:Function /* ():void */):void {
 			try {
 				code();
-			} catch (e:Error) {
+			} catch (e:*) {
 				if (!(e is exceptionType)) {
 					fail("Exception thrown doesn't match. Expected: '" + getQualifiedClassName(exceptionType) + "', but get '" + getQualifiedClassName(e) + "'");
 				}
@@ -128,20 +140,61 @@ package as3exec.asunit {
 			}
 			fail("assertThrows didn't throw any exception, but expected: '" + getQualifiedClassName(exceptionType) + "'");
 		}
+
+		/**
+		 * Checks that a function is called with a parameter several times with a set of values.
+		 *
+		 * @example
+		 * var callback:Function = addAsyncExpectParameter([1, 2, 3]);
+		 * setTimeout(function() {
+		 *     callback(1);
+		 *     callback(2);
+		 *     callback(3);
+		 * }, 0);
+		 *
+		 * @param	expectedValues            An array with a list of expected values
+		 * @param	parameterIndexToCheck     Index of the parameter to check
+		 * @param	timeout                   Milliseconds to wait for all the calls
+		 * @return
+		 */
+		final protected function addAsyncExpectParameter(expectedValues:Array, parameterIndexToCheck:int = 0, timeout:int = 1000):Function {
+			return addAsync(function() {
+				assertEquals(expectedValues.shift(), arguments[parameterIndexToCheck]);
+			}, timeout, expectedValues.length);
+		}
 		
-		final protected function addAsync(callback:Function, timeout:int = 1000):Function {
+		final protected function addAsyncCheckList(expectedCallbacks:Array, timeout:int = 1000):Function {
 			var that:TestCase = this;
-			waitAsyncCount++;
-			var timeoutId:uint = setTimeout(function():void {
-				fail("Async timeout " + timeout + "!");
-			}, timeout);
-			return function(...rest):void {
-				clearTimeout(timeoutId);
-				callback.apply(that, rest);
+			return addAsync(function() {
+				var expectedCallback:Function = expectedCallbacks.shift() as Function;
+				expectedCallback.apply(that, arguments);
+			}, timeout, expectedCallbacks.length);
+		}
+
+		final protected function addAsync(callback:Function, timeout:int = 1000, expectedExecutedTimes:uint = 1):Function {
+			var that:TestCase = this;
+			var timeoutId:uint;
+
+			waitAsyncCount += expectedExecutedTimes;
+			
+			function continueExecution():void {
 				waitAsyncCount--;
 				if (waitAsyncCount <= 0) {
+					clearTimeout(timeoutId);
 					setTimeout(waitAsyncCallback, 0);
 				}
+			}
+			
+			timeoutId = setTimeout(function():void {
+				__captureAsserts(function():void {
+					fail("Async timeout " + timeout + "!");
+				});
+				setTimeout(waitAsyncCallback, 0);
+			}, timeout);
+			
+			return function(...rest):void {
+				callback.apply(that, rest);
+				continueExecution();
 			};
 		}
 	}
