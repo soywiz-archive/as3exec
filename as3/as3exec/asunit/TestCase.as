@@ -1,5 +1,6 @@
 package as3exec.asunit {
 	import as3exec.Stdio;
+	import as3exec.TaskRunner;
 	import flash.utils.clearTimeout;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
@@ -19,21 +20,54 @@ package as3exec.asunit {
 		}
 		
 		public var totalCount:int = 0;
+		public var incompleteCount:int = 0;
 		public var errorCount:int = 0;
 		public var waitAsyncCount:int = 0;
 		public var waitAsyncCallback:Function;
 
-		private var executionStep:int = 0;
+		protected var executionStep:int = 0;
 
 		public function __init(waitAsyncCallback:Function):void {
 			this.totalCount = 0;
 			this.errorCount = 0;
+			this.incompleteCount = 0;
 			this.waitAsyncCount = 0;
 			this.waitAsyncCallback = waitAsyncCallback;
 		}
 		
+		private var _setUpAsyncOnceFlag:Boolean = false;
+		
+		final public function _setUpAsyncOnce(onReady:Function):void {
+			if (!_setUpAsyncOnceFlag) {
+				_setUpAsyncOnceFlag = true;
+				var taskRunner:TaskRunner = new TaskRunner(onReady);
+				{
+					setUpAsyncOnce(taskRunner);
+				}
+				taskRunner.execute();
+			} else {
+				setTimeout(onReady, 0);
+			}
+		}
+		
+		protected function setUpAsyncOnce(taskRunner:TaskRunner):void {
+		}
+
+		final public function _setUpAsync(onReady:Function):void {
+			setUpAsync(onReady);
+		}
+
+		protected function setUpAsync(onReady:Function):void {
+			setTimeout(onReady, 0);
+			//onReady();
+		}
+		
 		final public function __captureAsserts(callback:Function):void {
-			try {
+			if (Stdio.hasVisualConsole) {
+				callback();
+				return;
+			}
+			try {				
 				try {
 					callback();
 					return;
@@ -42,10 +76,10 @@ package as3exec.asunit {
 					//Stdio.writefln(e.getStackTrace().toString());
 					errorStr = e.getStackTrace().toString();
 					errorStr = errorStr.split("\n").slice(3).join("\n");
-					Stdio.writefln(e + "\n" + errorStr);
+					Stdio.writefln(e + "\n" + errorStr);					
 				}
 			} catch (e:*) {
-				Stdio.writefln("Assert Failed");
+				Stdio.writefln("Assert Failed");				
 			}
 			errorCount++;
 		}
@@ -59,6 +93,10 @@ package as3exec.asunit {
 		
 		final protected function fail(message:String = ""):void {
 			assert("fail", false, message);
+		}
+		
+		final protected function assertIncomplete(message:String = ""):void {
+			incompleteCount++;
 		}
 		
 		final protected function assertExecutionStep(index:int = 0, message:String = ""):void {

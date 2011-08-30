@@ -15,7 +15,7 @@ package as3exec {
 		static protected var textField:TextField;
 		static protected var buffer:String = "";
 		
-		static protected function get hasVisualConsole():Boolean {
+		static public function get hasVisualConsole():Boolean {
 			return Capabilities.playerType != "ActiveX";
 		}
 		
@@ -49,6 +49,10 @@ package as3exec {
 				" :: " + (Capabilities.isDebugger ? "Debugger" : "Retail")
 			);
 			Stdio.writefln("");
+		}
+		
+		static public function get consoleAvailable():Boolean {
+			return ExternalInterface.available;
 		}
 		
 		static public function format(format:String, ...rest):String {
@@ -96,11 +100,11 @@ package as3exec {
 			}
 		}
 
-		static public function getargs():* {
+		static public function getargs():Array {
 			if (ExternalInterface.available) {
 				return ExternalInterface.call("getargs");
 			} else {
-				return [];
+				return ["movie.swf"];
 			}
 		}
 		
@@ -111,6 +115,34 @@ package as3exec {
 				ExternalInterface.call("exit", errorCode);
 			} else {
 				trace("Exiting...", errorCode);
+			}
+		}
+		
+		static public function getopt(args:Array = null, handler:Function = null /* function(key:String, value:String):void */):void {
+			args = getargs().slice(1);
+			
+			if (args.length == 0) {
+				handler('', '');
+				return;
+			} else {
+				var key:String;
+				var value:String;
+				args = args.slice();
+				while (args.length) {
+					var arg:String = args.shift();
+					if (arg.substr(0, 2) == '--') {
+						var parts:Array = arg.substr(2).split('=');
+						key = parts[0];
+						value = parts.slice(1).join('=');
+						handler(key, value);
+					} else if (arg.substr(0, 1) == '-') {
+						key   = arg.substr(1, 1)
+						value = arg.substr(2);
+						handler(key, value);
+					} else {
+						handler('', arg);
+					}
+				}
 			}
 		}
 		
