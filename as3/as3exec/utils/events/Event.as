@@ -24,15 +24,19 @@ package as3exec.utils.events
 			}
 		}
 
-		public function dispatchNow(target:Object):void {
+		public function dispatchNow(target:Object, ...args):void {
+			args.unshift(target);
+
 			eventCallbacks.slice().forEach(function(item:EventCallback, index:int, eventCallbacks:Vector.<EventCallback>):void {
-				item.dispatch(target);
+				item.dispatch.apply(null, args);
 			});
 		}
 		
-		public function dispatchLater(target:Object):void {
+		public function dispatchLater(target:Object, ...args):void {
+			args.unshift(target);
+
 			setTimeout(function():void {
-				dispatchNow(target);
+				dispatchNow.apply(null, args);
 			}, 0);
 		}
 		

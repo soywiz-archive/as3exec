@@ -18,13 +18,16 @@ package as3exec.utils.events
 			this.event = null;
 		}
 		
-		public function dispatch(target:Object):void {
-			this.callback.call(null, target);
-			executionCount++;
-			
-			if (maxExecutionCount != -1) {
-				if (executionCount >= maxExecutionCount) {
-					destroy();
+		public function dispatch(target:Object, ...args):void {
+			args.unshift(target);
+			{
+				this.callback.apply(null, args);
+				executionCount++;
+				
+				if (maxExecutionCount != -1) {
+					if (executionCount >= maxExecutionCount) {
+						destroy();
+					}
 				}
 			}
 		}
