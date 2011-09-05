@@ -244,6 +244,10 @@ namespace ExControls
 				//Console.WriteLine("Input:{0}", e.request);
 				InvokeInfo = UnserializeInvoke(e.request);
 			}
+			catch (XmlException)
+			{
+				return;
+			}
 			catch (Exception Exception)
 			{
 				Console.WriteLine(Exception);
@@ -256,6 +260,10 @@ namespace ExControls
 			}
 			catch (Exception Exception)
 			{
+				if (InvokeInfo.Name.Substring(0, 8) == "function")
+				{
+					return;
+				}
 				Console.WriteLine("Calling undefined callback '{0}'", InvokeInfo.Name);
 				Console.WriteLine(Exception);
 				return;
@@ -681,22 +689,36 @@ namespace ExControls
 
 		public InvokeInfo UnserializeInvoke(String InvokeXmlString)
 		{
-			XmlDocument XmlDocument = new XmlDocument();
-			XmlDocument.LoadXml(InvokeXmlString);
-			var FirstChild = XmlDocument.FirstChild;
-			if (FirstChild.Name != "invoke")
+			try
 			{
-				throw(new Exception("Not an invoke"));
+				XmlDocument XmlDocument = new XmlDocument();
+				XmlDocument.LoadXml(InvokeXmlString);
+				var FirstChild = XmlDocument.FirstChild;
+				if (FirstChild.Name != "invoke")
+				{
+					throw (new Exception("Not an invoke"));
+				}
+
+				var objects = new List<object>();
+
+				foreach (var Node in FirstChild.FirstChild.ChildNodes.Cast<XmlNode>())
+				{
+					objects.Add(UnserializeObject(Node));
+				}
+
+				return new InvokeInfo() { Name = FirstChild.Attributes["name"].Value, Params = objects.ToArray() };
 			}
-
-			var objects = new List<object>();
-
-			foreach (var Node in FirstChild.FirstChild.ChildNodes.Cast<XmlNode>())
+			catch (XmlException exception)
 			{
-				objects.Add(UnserializeObject(Node));
+				throw (exception);
+			} 
+			catch (Exception exception)
+			{
+				Console.WriteLine("");
+				Console.WriteLine(InvokeXmlString);
+				Console.WriteLine("");
+				throw (exception);
 			}
-
-			return new InvokeInfo() { Name = FirstChild.Attributes["name"].Value, Params = objects.ToArray() };
 		}
 
 		public object UnserializeObject(String XmlDocumentString)
