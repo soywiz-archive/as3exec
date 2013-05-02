@@ -1,12 +1,12 @@
 package as3exec.asunit {
 	import as3exec.Stdio;
+	import as3exec.utils.Utils;
 	import flash.display.Sprite;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.utils.describeType;
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
-	import flash.utils.setTimeout;
 
 	public class TestRunner {
 		protected var queue:Array;
@@ -29,10 +29,10 @@ package as3exec.asunit {
 				sprite.removeEventListener(Event.ADDED_TO_STAGE, init);
 				Stdio.init(sprite);
 
-				setTimeout(function():void {
+				Utils.delayedExec(function():void {
 					callback(that);
 					that.run();
-				}, 0);
+				});
 			};
 			
 			if (sprite.stage) init(); else sprite.addEventListener(Event.ADDED_TO_STAGE, init);
@@ -101,9 +101,9 @@ package as3exec.asunit {
 						Stdio.writefln("Ok");
 					}
 					
-					setTimeout(function() {
+					Utils.delayedExec(function():void {
 						executeTestMethod(endedCallback);
-					}, 0);
+					});
 				};
 				
 				Stdio.writef("## " + methodPath);
@@ -128,7 +128,7 @@ package as3exec.asunit {
 						
 						//trace(method);
 						if (testCase.waitAsyncCount <= 0) {
-							setTimeout(completedCallback, 0);
+							Utils.delayedExec(completedCallback);
 						}
 					}
 					)

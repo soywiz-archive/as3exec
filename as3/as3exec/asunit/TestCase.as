@@ -1,6 +1,7 @@
 package as3exec.asunit {
 	import as3exec.Stdio;
 	import as3exec.TaskRunner;
+	import as3exec.utils.Utils;
 	import flash.utils.clearTimeout;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
@@ -46,7 +47,7 @@ package as3exec.asunit {
 				}
 				taskRunner.execute();
 			} else {
-				setTimeout(onReady, 0);
+				Utils.delayedExec(onReady);
 			}
 		}
 		
@@ -58,7 +59,7 @@ package as3exec.asunit {
 		}
 
 		protected function setUpAsync(onReady:Function):void {
-			setTimeout(onReady, 0);
+			Utils.delayedExec(onReady);
 			//onReady();
 		}
 		
@@ -194,11 +195,11 @@ package as3exec.asunit {
 		 *
 		 * @example
 		 * var callback:Function = addAsyncExpectParameter([1, 2, 3]);
-		 * setTimeout(function() {
+		 * Utils.delayedExec(function() {
 		 *     callback(1);
 		 *     callback(2);
 		 *     callback(3);
-		 * }, 0);
+		 * });
 		 *
 		 * @param	expectedValues            An array with a list of expected values
 		 * @param	parameterIndexToCheck     Index of the parameter to check
@@ -206,14 +207,14 @@ package as3exec.asunit {
 		 * @return
 		 */
 		final protected function addAsyncExpectParameter(expectedValues:Array, parameterIndexToCheck:int = 0, timeout:int = 1000):Function {
-			return addAsync(function() {
+			return addAsync(function():void {
 				assertEquals(expectedValues.shift(), arguments[parameterIndexToCheck]);
 			}, timeout, expectedValues.length);
 		}
 		
 		final protected function addAsyncCheckList(expectedCallbacks:Array, timeout:int = 1000):Function {
 			var that:TestCase = this;
-			return addAsync(function() {
+			return addAsync(function():void {
 				var expectedCallback:Function = expectedCallbacks.shift() as Function;
 				expectedCallback.apply(that, arguments);
 			}, timeout, expectedCallbacks.length);
@@ -237,7 +238,7 @@ package as3exec.asunit {
 				__captureAsserts(function():void {
 					fail("Async timeout " + timeout + "!");
 				});
-				setTimeout(waitAsyncCallback, 0);
+				Utils.delayedExec(waitAsyncCallback);
 			}, timeout);
 			
 			return function(...rest):void {

@@ -1,10 +1,11 @@
 package as3exec 
 {
+	import as3exec.utils.Utils;
 	import flash.utils.setTimeout;
 	public class TaskRunner 
 	{
-		var tasks:Vector.<Function>;
-		var onComplete:Function;
+		internal var tasks:Vector.<Function>;
+		internal var onComplete:Function;
 		
 		/**
 		 * 
@@ -32,7 +33,7 @@ package as3exec
 			this.onComplete = onComplete;
 		}
 
-		public function add(task:Function, ...args) {
+		public function add(task:Function, ...args):void {
 			this.tasks.push(function():void {
 				task.apply(null, args);
 			});
@@ -40,7 +41,7 @@ package as3exec
 		
 		public function next(...args):void {
 			if (this.tasks.length) {
-				setTimeout(this.tasks.shift(), 0);
+				Utils.delayedExec(this.tasks.shift());
 			} else {
 				this.onComplete();
 			}

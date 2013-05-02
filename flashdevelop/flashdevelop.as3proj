@@ -12,6 +12,7 @@
     <movie minorVersion="3" />
     <movie platform="Flash Player" />
     <movie background="#FFFFFF" />
+    <movie preferredSDK="Flex 4.6.0, AIR 3.7;4.6.0, 3.7;" />
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
@@ -21,6 +22,7 @@
   <!-- Build options -->
   <build>
     <option accessible="False" />
+    <option advancedTelemetry="False" />
     <option allowSourcePathOverlap="False" />
     <option benchmark="False" />
     <option es="False" />

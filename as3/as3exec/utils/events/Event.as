@@ -1,5 +1,6 @@
 package as3exec.utils.events 
 {
+	import as3exec.utils.Utils;
 	import flash.utils.setTimeout;
 	public class Event 
 	{
@@ -35,9 +36,9 @@ package as3exec.utils.events
 		public function dispatchLater(target:Object, ...args):void {
 			args.unshift(target);
 
-			setTimeout(function():void {
+			Utils.delayedExec(function():void {
 				dispatchNow.apply(null, args);
-			}, 0);
+			});
 		}
 		
 		public function destroy():void {
