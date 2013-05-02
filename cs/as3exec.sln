@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as3exec", "as3exec\as3exec.csproj", "{B5B1160E-8538-4C77-BF93-0393275C4578}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as3exec", "as3exec.csproj", "{B5B1160E-8538-4C77-BF93-0393275C4578}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
