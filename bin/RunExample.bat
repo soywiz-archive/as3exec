@@ -1,3 +1,3 @@
 @echo off
-as3exec Example.swf
+"%~dp0\..\as3exec.exe" Example.swf
 pause
