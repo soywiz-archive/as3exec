@@ -87,6 +87,13 @@ package
 				assertEqualsFloat(1 / 7, 0.1428, 0.00001);
 			});
 		}
+		
+		public function testEqualsDeepArray():void {
+			var array1:Array = [1, 2, [3, 4, [5, 6]]];
+			var array2:Array = [1, 2, [3, 4, [5, 6]]];
+			assertNotEquals(array1, array2);
+			assertDeepEquals(array1, array2);
+		}
 	}
 
 }

@@ -3,6 +3,7 @@ package as3exec.asunit {
 	import as3exec.utils.tasks.TaskRunner;
 	import as3exec.utils.Utils;
 	import flash.utils.clearTimeout;
+	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
 
@@ -152,6 +153,25 @@ package as3exec.asunit {
 			assert("assertEqualsFloat", (Math.abs(actual - expected) <= tolerance), "Float(" + expected + " == " + actual + ")");
 		}
 		
+		final protected function assertDeepEquals(expected:*, actual:*):void {
+			_assertDeepEquals("assertDeepEquals", expected, actual);
+		}
+		
+	
+		final private function _deepEquals(expected:*, actual:*):Boolean {
+			var k:*;
+			// TODO: detect recursion
+			if (typeof expected != typeof actual) return false;
+			if (typeof expected != 'object') return expected != actual;
+			for (k in expected) if (_deepEquals(expected[k], actual[k])) return false;
+			for (k in actual) if (_deepEquals(expected[k], actual[k])) return false;
+			return true;
+		}
+
+		final private function _assertDeepEquals(type:String, expected:*, actual:*):void {
+			assert(type, _deepEquals(expected, actual), "Object(" + expected + " == " + actual + ")");
+		}
+
 		final private function _assertEqualsArray(type:String, expected:Array, actual:Array):void {
 			var result:Boolean = true;
 			if (expected.length == actual.length) {
