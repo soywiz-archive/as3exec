@@ -159,12 +159,13 @@ package as3exec.asunit {
 		
 	
 		final private function _deepEquals(expected:*, actual:*):Boolean {
-			var k:*;
-			// TODO: detect recursion
-			if (typeof expected != typeof actual) return false;
-			if (typeof expected != 'object') return expected != actual;
-			for (k in expected) if (_deepEquals(expected[k], actual[k])) return false;
-			for (k in actual) if (_deepEquals(expected[k], actual[k])) return false;
+			var expectedBA:ByteArray = new ByteArray();
+			var actualBA:ByteArray = new ByteArray();
+			with (expectedBA) { writeObject(expected); position = 0; }
+			with (actualBA) { writeObject(actual); position = 0; }
+			if (expectedBA.length != actualBA.length) return false;
+			//return expectedBA.toString() == actualBA.toString();
+			for (var n:int = 0; n < expectedBA.length; n++) if (expectedBA[n] != actualBA[n]) return false;
 			return true;
 		}
 
