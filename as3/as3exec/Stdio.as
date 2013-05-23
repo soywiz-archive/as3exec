@@ -12,6 +12,7 @@ package as3exec {
 	import flash.text.TextFormat;
 
 	public class Stdio {
+		static public var stage:Stage;
 		static protected var textField:TextField;
 		static protected var buffer:String = "";
 		
@@ -20,6 +21,7 @@ package as3exec {
 		}
 		
 		static public function init(sprite:Sprite):void {
+			stage = sprite.stage;
 			sprite.stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			sprite.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			
