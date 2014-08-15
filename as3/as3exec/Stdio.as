@@ -121,6 +121,10 @@ package as3exec {
 			ExternalInterface.call("fs_delete", file);
 		}
 
+		static public function fs_mkdir(path:String):void {
+			ExternalInterface.call("fs_mkdir", path);
+		}
+
 		static public function fs_write(file:String, out:ByteArray):void {
 			var out_s:String = '';
 			for (var n:int = 0; n < out.length; n++) {

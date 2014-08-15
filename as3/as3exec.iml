@@ -2,7 +2,7 @@
 <module type="Flex" version="4">
   <component name="FlexBuildConfigurationManager" active="as3exec">
     <configurations>
-      <configuration name="as3exec" pure-as="true" output-type="Library" output-file="as3exec.swc" output-folder="$MODULE_DIR$/out/production/as3exec">
+      <configuration name="as3exec" pure-as="true" output-type="Library" output-file="as3exec.swc" output-folder="$MODULE_DIR$/..">
         <dependencies target-player="14.0">
           <sdk name="airsdk14" />
         </dependencies>

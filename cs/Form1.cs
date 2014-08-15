@@ -150,6 +150,7 @@ namespace as3exec
 			flash.RegisterCallback("fs_delete", as3_fs_delete);
 			flash.RegisterCallback("fs_list", as3_fs_list);
 			flash.RegisterCallback("fs_stat", as3_fs_stat);
+			flash.RegisterCallback("fs_mkdir", as3_fs_mkdir);
 			flash.RegisterCallback("exit"    , as3_exit);
 
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(args));
@@ -205,6 +206,19 @@ namespace as3exec
 			return "";
 		}
 
+		dynamic as3_fs_mkdir(dynamic Params)
+		{
+			try
+			{
+				Directory.CreateDirectory(Params[0]);
+			}
+			catch (Exception)
+			{
+
+			}
+			return null;
+		}
+
 		dynamic as3_writef(dynamic Params)
 		{
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(Params));
@@ -231,7 +245,7 @@ namespace as3exec
 		dynamic as3_fs_exists(dynamic Params)
 		{
 			String FileName = Params[0];
-			return File.Exists(FileName);
+			return File.Exists(FileName) ? 1 : 0;
 		}
 
 		dynamic as3_fs_delete(dynamic Params)
