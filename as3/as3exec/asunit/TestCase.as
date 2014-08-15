@@ -2,6 +2,8 @@ package as3exec.asunit {
 	import as3exec.Stdio;
 	import as3exec.utils.tasks.TaskRunner;
 	import as3exec.utils.Utils;
+
+	import flash.utils.ByteArray;
 	import flash.utils.clearTimeout;
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
