@@ -2,6 +2,8 @@ package {
 	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
+	import flash.utils.ByteArray;
+	import as3exec.*;
 
 	[SWF(width = "640", height = "480", backgroundColor = "#ffffff", frameRate = "24", pageTitle = "Example")]
 	public class Example extends MovieClip {
@@ -20,9 +22,18 @@ package {
 			graphics.drawRect(0, 0, 100, 100);
 			graphics.endFill();
 
-			Stdio.init(stage, loaderInfo);
+			Stdio.init(this, true);
 			{
 				Stdio.writefln("Hello World!");
+				var ba:ByteArray = new ByteArray();
+				ba.writeByte(77);
+				ba.writeByte(78);
+				ba.writeByte(79);
+				Stdio.fs_write('temp.bin', ba);
+				Stdio.writefln("readed again:" + Stdio.fs_read('temp.bin'));
+				Stdio.writefln(JSON.stringify(Stdio.fs_stat('temp.bin')));
+				Stdio.writefln("Hello World 2!");
+				Stdio.writefln(JSON.stringify(Stdio.fs_list('..')));
 				
 				throw(new Error("Error!"));
 			}

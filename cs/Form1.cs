@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using ExControls;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Dynamic;
 
 namespace as3exec
 {
@@ -20,6 +21,7 @@ namespace as3exec
 		Timer Timer1;
 		ExAxShockwaveFlash flash;
 		bool ShouldExit;
+		int ExitCode = 0;
 
 		public Form1(string[] args)
 		{
@@ -108,7 +110,7 @@ namespace as3exec
 				//return;
 			}
 
-			var ocxNames = new string[] { "Flash11a.ocx", "Flash10u.ocx" };
+			var ocxNames = new string[] { "Flash11a.ocx", "Flash10u.ocx", "Flash.ocx" };
 
 			String OcxPathBase = Directory.GetParent(Application.ExecutablePath).FullName;
 
@@ -142,6 +144,12 @@ namespace as3exec
 			flash.RegisterCallback("getargs" , as3_getargs);
 			flash.RegisterCallback("writef"  , as3_writef);
 			flash.RegisterCallback("writefln", as3_writefln);
+			flash.RegisterCallback("fs_write", as3_fs_write);
+			flash.RegisterCallback("fs_read", as3_fs_read);
+			flash.RegisterCallback("fs_exists", as3_fs_exists);
+			flash.RegisterCallback("fs_delete", as3_fs_delete);
+			flash.RegisterCallback("fs_list", as3_fs_list);
+			flash.RegisterCallback("fs_stat", as3_fs_stat);
 			flash.RegisterCallback("exit"    , as3_exit);
 
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(args));
@@ -186,7 +194,7 @@ namespace as3exec
 		{
 			//Console.WriteLine("Exiting...");
 			//ThisForm.Close();
-			Application.Exit();
+			Environment.Exit(ExitCode);
 		}
 
 		dynamic as3_writefln(dynamic Params)
@@ -205,16 +213,84 @@ namespace as3exec
 			return "";
 		}
 
+		dynamic as3_fs_write(dynamic Params)
+		{
+			String FileName = Params[0];
+			String BinaryDataAsHex = Params[1];
+
+			File.WriteAllBytes(FileName, HexToBin(BinaryDataAsHex));
+			return "";
+		}
+
+		dynamic as3_fs_read(dynamic Params)
+		{
+			String FileName = Params[0];
+			return BinToHex(File.ReadAllBytes(FileName));
+		}
+
+		dynamic as3_fs_exists(dynamic Params)
+		{
+			String FileName = Params[0];
+			return File.Exists(FileName);
+		}
+
+		dynamic as3_fs_delete(dynamic Params)
+		{
+			String FileName = Params[0];
+			File.Delete(FileName);
+			return true;
+		}
+
+		dynamic as3_fs_list(dynamic Params)
+		{
+			String Path = Params[0];
+			return new DirectoryInfo(Path).GetFileSystemInfos().Select(Item => Item.Name).ToArray();
+		}
+
+		dynamic as3_fs_stat(dynamic Params)
+		{
+			String FileName = Params[0];
+			var info = new FileInfo(FileName);
+			var dynamic = new Dictionary<string, Object>();
+			//dynamic["size"] = info.Length;
+			return "{\"size\":" + info.Length + ",\"exists\":" + (info.Exists ? "true" : "false") + ",\"name\":\"" + info.Name + "\"}";
+		}
+
+		static private String BinToHex(byte[] Bin)
+		{
+			var Out = "";
+			for (int n = 0; n < Bin.Length; n++)
+			{
+				Out += Bin[n].ToString("X").PadLeft(2, '0');
+			}
+			return Out;
+		}
+
+		static private byte[] HexToBin(string Hex)
+		{
+			var Out = new byte[Hex.Length / 2];
+			for (int n = 0, m = 0; n < Hex.Length; n += 2, m++) {
+				Out[m] = (byte)Convert.ToInt32(Hex.Substring(n, 2), 16);
+			}
+			return Out;
+		}
+
 		dynamic as3_getargs(dynamic Params)
 		{
 			return args;
 		}
 
-		dynamic as3_exit(dynamic Params)
+		dynamic as3_exit(dynamic _Params)
 		{
+			Object[] Params = _Params;
 			ShouldExit = true;
 			//throw (new Exception("Exiting"));
-			Application.Exit();
+
+			//Console.WriteLine("as3_exit: " + Params[0]);
+
+			ExitCode = Convert.ToInt32(Params[0]);
+			//Environment.Exit();
+			ShouldExit = true;
 			return null;
 		}
 	}

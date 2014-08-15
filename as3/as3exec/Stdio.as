@@ -10,6 +10,7 @@ package as3exec {
 	import flash.system.Capabilities;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import flash.utils.ByteArray;
 
 	public class Stdio {
 		static public var stage:Stage;
@@ -20,7 +21,7 @@ package as3exec {
 			return Capabilities.playerType != "ActiveX";
 		}
 		
-		static public function init(sprite:Sprite):void {
+		static public function init(sprite:Sprite, showVersion:Boolean = true):void {
 			stage = sprite.stage;
 			sprite.stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 			sprite.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
@@ -45,12 +46,14 @@ package as3exec {
 				sprite.stage.dispatchEvent(new Event(Event.RESIZE));
 			}
 			
-			Stdio.writefln(
-				"Version: " + Capabilities.os + " - " + Capabilities.cpuArchitecture +
-				" :: " + Capabilities.version + " :: " + Capabilities.playerType +
-				" :: " + (Capabilities.isDebugger ? "Debugger" : "Retail")
-			);
-			Stdio.writefln("");
+			if (showVersion) {
+				Stdio.writefln(
+					"Version: " + Capabilities.os + " - " + Capabilities.cpuArchitecture +
+					" :: " + Capabilities.version + " :: " + Capabilities.playerType +
+					" :: " + (Capabilities.isDebugger ? "Debugger" : "Retail")
+				);
+				Stdio.writefln("");
+			}
 		}
 		
 		static public function get consoleAvailable():Boolean {
@@ -100,6 +103,42 @@ package as3exec {
 				appendBuffer(str + "\n");
 				flush();
 			}
+		}
+
+		static public function fs_list(path:String):Array {
+			return ExternalInterface.call("fs_list", path);
+		}
+		
+		static public function fs_stat(path:String):* {
+			return JSON.parse(ExternalInterface.call("fs_stat", path));
+		}
+		
+		static public function fs_exists(file:String):Boolean {
+			return ExternalInterface.call("fs_exists", file);
+		}
+		
+		static public function fs_delete(file:String):void {
+			ExternalInterface.call("fs_delete", file);
+		}
+
+		static public function fs_write(file:String, out:ByteArray):void {
+			var out_s:String = '';
+			for (var n:int = 0; n < out.length; n++) {
+				var o:String = out[n].toString(16);
+				while (o.length < 2) o = '0' + o;
+				out_s += o;
+			}
+			ExternalInterface.call("fs_write", file, out_s);
+		}
+		
+		static public function fs_read(file:String):ByteArray {
+			var result:String = ExternalInterface.call("fs_read", file);
+			var out:ByteArray = new ByteArray();
+			for (var n:int = 0; n < result.length; n += 2) {
+				out.writeByte(parseInt(result.substr(n, 2), 16));
+			}
+			out.position = 0;
+			return out;
 		}
 
 		static public function getargs():Array {
