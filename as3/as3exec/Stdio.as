@@ -12,6 +12,7 @@ package as3exec {
 	import flash.text.TextFormat;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
 	public class Stdio {
@@ -128,14 +129,19 @@ package as3exec {
 		}
 
 		static private var watchRegisteredCallbacks:Dictionary;
+		static private var callsByName:Dictionary = new Dictionary();
 		static private function _fs_watch_register_once():void {
 			if (watchRegisteredCallbacks) return;
 			watchRegisteredCallbacks = new Dictionary();
 			ExternalInterface.addCallback('FsWatchNotify', function (id:int, type:String, file1:String, file2:String):void {
 				var callback2:Function = watchRegisteredCallbacks[id];
-				setTimeout(function():void {
+				if (callsByName[file1]) {
+					clearTimeout(callsByName[file1]);
+				}
+				callsByName[file1] = setTimeout(function():void {
+					delete callsByName[file1];
 					callback2(type, file1, file2);
-				}, 0);
+				}, 200);
 			});
 		}
 

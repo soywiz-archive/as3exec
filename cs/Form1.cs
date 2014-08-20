@@ -10,6 +10,7 @@ using ExControls;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Dynamic;
+using System.Threading;
 
 namespace as3exec
 {
@@ -18,7 +19,7 @@ namespace as3exec
 		static Form1 ThisForm;
 		string[] args;
 
-		Timer Timer1;
+		System.Windows.Forms.Timer Timer1;
 		ExAxShockwaveFlash flash;
 		bool ShouldExit;
 		int ExitCode = 0;
@@ -45,7 +46,7 @@ namespace as3exec
 
 			ExecuteFlash();
 
-			Timer1 = new Timer();
+			Timer1 = new System.Windows.Forms.Timer();
 			Timer1.Interval = 20;
 			Timer1.Tick += new EventHandler(Timer1_Tick);
 			Timer1.Start();
@@ -295,7 +296,18 @@ namespace as3exec
 		dynamic as3_fs_read(dynamic Params)
 		{
 			String FileName = Params[0];
-			return BinToHex(File.ReadAllBytes(FileName));
+			for (int n = 0; n < 10; n++)
+			{
+				try
+				{
+					return BinToHex(File.ReadAllBytes(FileName));
+				}
+				catch (IOException)
+				{
+					Thread.Sleep(10 * (n + 1));
+				}
+			}
+			return "";
 		}
 
 		dynamic as3_fs_exists(dynamic Params)
