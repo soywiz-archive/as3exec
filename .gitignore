@@ -4,3 +4,4 @@ obj
 /samples/temp.bin
 /as3/*.iws
 /as3/out
+/cs/*.user

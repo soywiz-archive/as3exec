@@ -151,6 +151,8 @@ namespace as3exec
 			flash.RegisterCallback("fs_list", as3_fs_list);
 			flash.RegisterCallback("fs_stat", as3_fs_stat);
 			flash.RegisterCallback("fs_mkdir", as3_fs_mkdir);
+			flash.RegisterCallback("fs_watch", as3_fs_watch);
+			flash.RegisterCallback("fs_unwatch", as3_fs_unwatch);
 			flash.RegisterCallback("exit"    , as3_exit);
 
 			//Console.WriteLine(ExAxShockwaveFlash.ToJson(args));
@@ -196,6 +198,55 @@ namespace as3exec
 			//Console.WriteLine("Exiting...");
 			//ThisForm.Close();
 			Environment.Exit(ExitCode);
+		}
+
+		private string flashCall(string Name, object[] Args)
+		{
+			return flash.CallFunction(Serializer.SerializeInvoke(Name, Args));
+		}
+
+		private int lastWatcherId = 0;
+		private Dictionary<int, FileSystemWatcher> watchers = new Dictionary<int, FileSystemWatcher>();
+
+		dynamic as3_fs_watch(dynamic Params)
+		{
+			var Path = Params[0];
+			var watcher = new FileSystemWatcher(Path);
+			int watcherId = lastWatcherId++;
+			watchers[watcherId] = watcher;
+			//FileSystemWatcher.Created
+			watcher.Changed += (sender, e) =>
+			{
+				flashCall("FsWatchNotify", new string[] { watcherId.ToString(), "Changed", e.FullPath, "" });
+			};
+			watcher.Created += (sender, e) =>
+			{
+				flashCall("FsWatchNotify", new string[] { watcherId.ToString(), "Created", e.FullPath, "" });
+			};
+			watcher.Deleted += (sender, e) =>
+			{
+				flashCall("FsWatchNotify", new string[] { watcherId.ToString(), "Deleted", e.FullPath, "" });
+			};
+			watcher.Renamed += (sender, e) =>
+			{
+				flashCall("FsWatchNotify", new string[] { watcherId.ToString(), "Renamed", e.FullPath, e.OldFullPath });
+			};
+			watcher.EnableRaisingEvents = true;
+
+			return watcherId;
+		}
+
+		dynamic as3_fs_unwatch(dynamic Params)
+		{
+			var watcherId = (int)Params[0];
+			if (watchers.ContainsKey(watcherId))
+			{
+				var Watcher = watchers[watcherId];
+				Watcher.EnableRaisingEvents = false;
+				Watcher.Dispose();
+				watchers.Remove(watcherId);
+			}
+			return null;
 		}
 
 		dynamic as3_writefln(dynamic Params)
@@ -309,3 +360,130 @@ namespace as3exec
 		}
 	}
 }
+
+class Serializer
+{
+	static public string SerializeInvoke(String FunctionName, Object[] Arguments)
+	{
+		return "<invoke name=\"" + FunctionName + "\" returntype=\"xml\"><arguments>" + String.Join("", Arguments.Select(Item => Serialize(Item))) + "</arguments></invoke>";
+	}
+
+	static public string Serialize(Object Object) {
+		if (Object == null) return "<null />";
+		if (Object is bool) return ((bool)Object) ? "<true />" : "<false />";
+		if (Object is string) return "<string>" + Object + "</string>";
+		if (Object is sbyte || Object is byte || Object is short || Object is ushort || Object is int || Object is uint || Object is long || Object is ulong || Object is float || Object is double) return "<number>" + Object + "</number>";
+		if (Object.GetType().IsArray)
+		{
+			var ArrayObject = (Array)Object;
+			return "<array>" + Enumerable.Range(0, ArrayObject.Length).Select(Index => "<property id=\"" + Index + "\">" + ArrayObject.GetValue(Index) + "</property>") + "</array>";
+		}
+		throw(new Exception("Can't handle '" + Object + "'"));
+	}
+}
+
+
+/*
+ * http://help.adobe.com/en_US/ActionScript/3.0_ProgrammingAS3/WS5b3ccc516d4fbf351e63e3d118a9b90204-7caf.html
+The external API’s XML format
+
+Communication between ActionScript and an application hosting the Shockwave Flash ActiveX control uses a specific XML format to encode function calls and values.
+ * There are two parts to the XML format used by the external API. One format is used to represent function calls. Another format is used to represent individual values;
+ * this format is used for parameters in functions as well as function return values. The XML format for function calls is used for calls to and from ActionScript.
+ * For a function call from ActionScript, Flash Player passes the XML to the container; for a call from the container, Flash Player expects the container application
+ * to pass it an XML string in this format. The following XML fragment shows an example XML-formatted function call:
+
+<invoke name="functionName" returntype="xml"> 
+    <arguments> 
+        ... (individual argument values) 
+    </arguments> 
+</invoke>
+The root node is the invoke node. It has two attributes: name indicates the name of the function to call, and returntype is always xml. If the function call includes parameters,
+ * the invoke node has a child arguments node, whose child nodes will be the parameter values formatted using the individual value format explained next.
+
+Individual values, including function parameters and function return values, use a formatting scheme that includes data type information in addition to the actual values.
+ * The following table lists ActionScript classes and the XML format used to encode values of that data type:
+
+ActionScript class/value
+
+C# class/value
+
+Format
+
+Comments
+
+null
+
+null
+
+<null/>
+
+ 
+Boolean true
+
+bool true
+
+<true/>
+
+ 
+Boolean false
+
+bool false
+
+<false/>
+
+ 
+String
+
+string
+
+<string>string value</string>
+
+ 
+Number, int, uint
+
+single, double, int, uint
+
+<number>27.5</number> 
+<number>-12</number>
+ 
+Array (elements can be mixed types)
+
+A collection that allows mixed-type elements, such as ArrayList or object[]
+
+<array> 
+    <property id="0"> 
+        <number>27.5</number> 
+    </property> 
+    <property id="1"> 
+        <string>Hello there!</string> 
+    </property> 
+    ... 
+</array>
+The property node defines individual elements, and the id attribute is the numeric, zero-based index.
+
+Object
+
+A dictionary with string keys and object values, such as a HashTable with string keys
+
+<object> 
+    <property id="name"> 
+        <string>John Doe</string> 
+    </property> 
+    <property id="age"> 
+        <string>33</string> 
+    </property> 
+    ... 
+</object>
+The property node defines individual properties, and the id attribute is the property name (a string).
+
+Other built-in or custom classes
+
+ 	
+<null/> or  
+<object></object>
+ActionScript encodes other objects as null or as an empty object. In either case any property values are lost.
+
+Note: By way of example, this table shows equivalent C# classes in addition to ActionScript classes; however, the external API can be used to communicate with any programming language or run time that supports ActiveX controls, and is not limited to C# applications.
+When you are building your own applications using the external API with an ActiveX container application, you’ll probably find it convenient to write a proxy that will perform the task of converting native function calls to the serialized XML format. For an example of a proxy class written in C#, see Inside the ExternalInterfaceProxy class.
+*/

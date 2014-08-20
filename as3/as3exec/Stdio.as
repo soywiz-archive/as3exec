@@ -11,6 +11,8 @@ package as3exec {
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	import flash.utils.setTimeout;
 
 	public class Stdio {
 		static public var stage:Stage;
@@ -123,6 +125,30 @@ package as3exec {
 
 		static public function fs_mkdir(path:String):void {
 			ExternalInterface.call("fs_mkdir", path);
+		}
+
+		static private var watchRegisteredCallbacks:Dictionary;
+		static private function _fs_watch_register_once():void {
+			if (watchRegisteredCallbacks) return;
+			watchRegisteredCallbacks = new Dictionary();
+			ExternalInterface.addCallback('FsWatchNotify', function (id:int, type:String, file1:String, file2:String):void {
+				var callback2:Function = watchRegisteredCallbacks[id];
+				setTimeout(function():void {
+					callback2(type, file1, file2);
+				}, 0);
+			});
+		}
+
+		static public function fs_watch(path:String, callback:Function):int {
+			_fs_watch_register_once();
+			var id:int = ExternalInterface.call("fs_watch", path);
+			watchRegisteredCallbacks[id] = callback;
+			return id;
+		}
+
+		static public function fs_unwatch(id:int):void {
+			ExternalInterface.call("fs_unwatch", id);
+			delete watchRegisteredCallbacks[id];
 		}
 
 		static public function fs_write(file:String, out:ByteArray):void {
