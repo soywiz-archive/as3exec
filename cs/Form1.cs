@@ -28,9 +28,14 @@ namespace as3exec
 			ThisForm = this;
 			this.args = args;
 			this.StartPosition = FormStartPosition.Manual;
+			this.MinimumSize = new Size(1, 1);
+			this.MaximumSize = new Size(1, 1);
 			this.SetDesktopBounds(0, 0, 1, 1);
 
 			InitializeComponent();
+
+			this.Size = new Size(1, 1);
+			this.ClientSize = new System.Drawing.Size(1, 1);
 
 			//var image = ExAxShockwaveFlash.StaticTakeScreenshot(@"D:\OurClientV2\src\UnitTests\bin\UnitTests.swf");
 
