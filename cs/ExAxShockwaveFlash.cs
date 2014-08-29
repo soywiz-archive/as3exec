@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using AxShockwaveFlashObjects;
 using System.Windows.Forms;
-using System.Xml.Linq;
 using System.Xml;
 using System.IO;
 using System.Drawing;
@@ -16,6 +14,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Collections;
 using System.Reflection;
+
+delegate TR Func<T, TR>(T Param);
 
 namespace ExControls
 {
@@ -219,13 +219,13 @@ namespace ExControls
 			SetStyle(ControlStyles.Opaque, true);
 			SetStyle(ControlStyles.ResizeRedraw, true);
 
-			Callbacks = new Dictionary<string, Func<dynamic, dynamic>>();
+            Callbacks = new Dictionary<string, Func<Array, Object>>();
 			FlashCall += new AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEventHandler(flash_FlashCall);
 		}
 
-		Dictionary<string, Func<dynamic, dynamic>> Callbacks;
+        Dictionary<string, Func<Array, Object>> Callbacks;
 
-		public void RegisterCallback(string Name, Func<dynamic, dynamic> Callback)
+		public void RegisterCallback(string Name, Func<Array, Object> Callback)
 		{
 			Callbacks[Name] = Callback;
 		}
@@ -253,7 +253,7 @@ namespace ExControls
 				Console.WriteLine(Exception);
 				return;
 			}
-			Func<dynamic, dynamic> Callback;
+            Func<Array, Object> Callback;
 			try
 			{
 				Callback = Callbacks[InvokeInfo.Name];
@@ -269,7 +269,7 @@ namespace ExControls
 				return;
 			}
 
-			dynamic ReturnValue;
+			Object ReturnValue;
 
 			try
 			{
@@ -313,7 +313,12 @@ namespace ExControls
 		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr dc, DrawingOptions opts);
 
 		static private String MD5Hex(byte[] Data) {
-			return String.Join("", MD5.Create().ComputeHash(Data).Select((v) => v.ToString("x2")));
+            var Data2 = MD5.Create().ComputeHash(Data);
+            var Out = "";
+            for (int n = 0; n < Data2.Length; n++) {
+                Out += Data2[n].ToString("x2");
+            }
+			return Out;
 		}
 
 		static private String MD5Hex(String Data, Encoding Encoding)
@@ -444,13 +449,13 @@ namespace ExControls
 			var TypeString = Type.ToString();
 			if (TypeString.Substring(TypeString.Length - 2) == "[]")
 			{
-				var dynParam = (dynamic)Param;
+				var dynParam = (Array)Param;
 				string ret = "";
 				ret += "";
 				for (int n = 0; n < dynParam.Length; n++)
 				{
 					if (n != 0) ret += ", ";
-					ret += ToOutputString(dynParam[n]);
+					ret += ToOutputString(dynParam.GetValue(n));
 				}
 				ret += "";
 				return ret;
@@ -521,13 +526,13 @@ namespace ExControls
 			var TypeString = Type.ToString();
 			if (TypeString.Substring(TypeString.Length - 2) == "[]")
 			{
-				var dynParam = (dynamic)Param;
+				var dynParam = (Array)Param;
 				string ret = "";
 				ret += "[";
 				for (int n = 0; n < dynParam.Length; n++)
 				{
 					if (n != 0) ret += ", ";
-					ret += ToJson(dynParam[n]);
+					ret += ToJson(dynParam.GetValue(n));
 				}
 				ret += "]";
 				return ret;
@@ -601,13 +606,13 @@ namespace ExControls
 			var TypeString = Type.ToString();
 			if (TypeString.Substring(TypeString.Length - 2) == "[]")
 			{
-				var dynParam = (dynamic)Param;
+				var dynParam = (Array)Param;
 				string ret = "";
 				ret += "<array>";
 				for (int n = 0; n < dynParam.Length; n++)
 				{
 					ret += "<property id=\"" + n + "\">";
-					ret += SerializeObject(dynParam[n]);
+					ret += SerializeObject(dynParam.GetValue(n));
 					ret += "</property>";
 				}
 				ret += "</array>";
@@ -663,11 +668,11 @@ namespace ExControls
 			}
 		}
 
-		protected object ExternalInterfaceCall(String Name, params object[] Params)
+		public object ExternalInterfaceCall(String Name, params object[] Params)
 		{
 			//typeof(T).
 			String CallString = "";
-			CallString += "<invoke name=\"" + Name + "\" returntype=\"string\">";
+			CallString += "<invoke name=\"" + Name + "\" returntype=\"xml\">";
 			CallString += "<arguments>";
 
 			foreach (var Param in Params)
@@ -684,7 +689,7 @@ namespace ExControls
 		public class InvokeInfo
 		{
 			public string Name;
-			public dynamic Params;
+			public Array Params;
 		}
 
 		public InvokeInfo UnserializeInvoke(String InvokeXmlString)
@@ -701,9 +706,9 @@ namespace ExControls
 
 				var objects = new List<object>();
 
-				foreach (var Node in FirstChild.FirstChild.ChildNodes.Cast<XmlNode>())
+				foreach (var Node in FirstChild.FirstChild.ChildNodes)
 				{
-					objects.Add(UnserializeObject(Node));
+					objects.Add(UnserializeObject((XmlNode)Node));
 				}
 
 				return new InvokeInfo() { Name = FirstChild.Attributes["name"].Value, Params = objects.ToArray() };
@@ -822,3 +827,108 @@ namespace ExControls
 		}
 	}
 }
+
+/*
+ * http://help.adobe.com/en_US/ActionScript/3.0_ProgrammingAS3/WS5b3ccc516d4fbf351e63e3d118a9b90204-7caf.html
+The external API’s XML format
+
+Communication between ActionScript and an application hosting the Shockwave Flash ActiveX control uses a specific XML format to encode function calls and values.
+ * There are two parts to the XML format used by the external API. One format is used to represent function calls. Another format is used to represent individual values;
+ * this format is used for parameters in functions as well as function return values. The XML format for function calls is used for calls to and from ActionScript.
+ * For a function call from ActionScript, Flash Player passes the XML to the container; for a call from the container, Flash Player expects the container application
+ * to pass it an XML string in this format. The following XML fragment shows an example XML-formatted function call:
+
+<invoke name="functionName" returntype="xml"> 
+    <arguments> 
+        ... (individual argument values) 
+    </arguments> 
+</invoke>
+The root node is the invoke node. It has two attributes: name indicates the name of the function to call, and returntype is always xml. If the function call includes parameters,
+ * the invoke node has a child arguments node, whose child nodes will be the parameter values formatted using the individual value format explained next.
+
+Individual values, including function parameters and function return values, use a formatting scheme that includes data type information in addition to the actual values.
+ * The following table lists ActionScript classes and the XML format used to encode values of that data type:
+
+ActionScript class/value
+
+C# class/value
+
+Format
+
+Comments
+
+null
+
+null
+
+<null/>
+
+ 
+Boolean true
+
+bool true
+
+<true/>
+
+ 
+Boolean false
+
+bool false
+
+<false/>
+
+ 
+String
+
+string
+
+<string>string value</string>
+
+ 
+Number, int, uint
+
+single, double, int, uint
+
+<number>27.5</number> 
+<number>-12</number>
+ 
+Array (elements can be mixed types)
+
+A collection that allows mixed-type elements, such as ArrayList or object[]
+
+<array> 
+    <property id="0"> 
+        <number>27.5</number> 
+    </property> 
+    <property id="1"> 
+        <string>Hello there!</string> 
+    </property> 
+    ... 
+</array>
+The property node defines individual elements, and the id attribute is the numeric, zero-based index.
+
+Object
+
+A dictionary with string keys and object values, such as a HashTable with string keys
+
+<object> 
+    <property id="name"> 
+        <string>John Doe</string> 
+    </property> 
+    <property id="age"> 
+        <string>33</string> 
+    </property> 
+    ... 
+</object>
+The property node defines individual properties, and the id attribute is the property name (a string).
+
+Other built-in or custom classes
+
+ 	
+<null/> or  
+<object></object>
+ActionScript encodes other objects as null or as an empty object. In either case any property values are lost.
+
+Note: By way of example, this table shows equivalent C# classes in addition to ActionScript classes; however, the external API can be used to communicate with any programming language or run time that supports ActiveX controls, and is not limited to C# applications.
+When you are building your own applications using the external API with an ActiveX container application, you’ll probably find it convenient to write a proxy that will perform the task of converting native function calls to the serialized XML format. For an example of a proxy class written in C#, see Inside the ExternalInterfaceProxy class.
+*/

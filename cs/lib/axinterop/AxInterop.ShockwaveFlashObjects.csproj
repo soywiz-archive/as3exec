@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{F3E963CE-74D4-4E8B-AFD0-0A70D6EADABB}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <AssemblyName>AxInterop.ShockwaveFlashObjects</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AxShockwaveFlashObjects\AxShockwaveFlash.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="AxShockwaveFlashObjects\AxShockwaveFlashEventMulticaster.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_FlashCallEvent.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_FlashCallEventHandler.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_FSCommandEvent.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_FSCommandEventHandler.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_OnProgressEvent.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_OnProgressEventHandler.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_OnReadyStateChangeEvent.cs" />
+    <Compile Include="AxShockwaveFlashObjects\_IShockwaveFlashEvents_OnReadyStateChangeEventHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="ShockwaveFlashObjects">
+      <Guid>{D27CDB6B-AE6D-11CF-96B8-444553540000}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
